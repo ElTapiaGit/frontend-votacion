@@ -24,7 +24,7 @@ class HomePage extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.secondary,
+                color: AppColors.primary,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
@@ -48,7 +48,7 @@ class HomePage extends StatelessWidget {
                     context: context,
                     label: 'Registrar Votación',
                     onPressed: () {
-                      // TODO: Navegar al módulo de votación
+                      Navigator.pushNamed(context, '/votacion');
                     },
                   ),
                   const SizedBox(height: 20),
@@ -56,7 +56,7 @@ class HomePage extends StatelessWidget {
                     context: context,
                     label: 'Sincronizar',
                     onPressed: () {
-                      // TODO: Agregar funcionalidad de sincronización
+                      //Agregar funcionalidad de sincronización
                     },
                   ),
                   const SizedBox(height: 20),
