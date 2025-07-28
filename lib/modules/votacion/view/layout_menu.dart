@@ -64,8 +64,8 @@ class _RegistrarVotacionPageState extends State<RegistrarVotacionPage> {
                         ),
                         child: Row(
                           children: [
-                            _buildTabButton('Votacion 1', 0),
-                            _buildTabButton('Votacion 2', 1),
+                            _buildTabButton('Presidenciales', 0),
+                            _buildTabButton('Uninominales', 1),
                             _buildTabButton('Sincronizar votos', 2),
                           ],
                         ),
