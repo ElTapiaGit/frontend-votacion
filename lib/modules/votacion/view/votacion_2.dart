@@ -1,158 +1,207 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 import 'package:demo_filestack/core/constants/app_colors.dart';
-import 'package:demo_filestack/modules/votacion/view/registrar_votos.dart';
 
 class Votacion2View extends StatefulWidget {
-  const Votacion2View({super.key});
+  final VoidCallback onNext;
+
+  const Votacion2View({super.key, required this.onNext});
 
   @override
   State<Votacion2View> createState() => _Votacion2ViewState();
 }
 
 class _Votacion2ViewState extends State<Votacion2View> {
-  String? barcodeText;
-  final TextEditingController mesaController = TextEditingController();
-  bool isLoading = false;
-
-  Future<void> _pickAndScanImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-    if (pickedFile != null) {
-      final inputImage = InputImage.fromFilePath(pickedFile.path);
-
-      final barcodeScanner = BarcodeScanner();
-      final barcodes = await barcodeScanner.processImage(inputImage);
-
-      if (barcodes.isNotEmpty) {
-        final code = barcodes.first.rawValue ?? 'Codigo no reconocido';
-        setState(() {
-          barcodeText = code;
-        });
-        print('Codigo detectado: $code');
-      } else {
-        setState(() {
-          barcodeText = 'No se detecto ningun codigo';
-        });
-        print('No se detecto ningun codigo de barras.');
-      }
-
-      await barcodeScanner.close();
-    } else {
-      print('No se selecciono ninguna imagen.');
-    }
-  }
-
-  Future<void> _continuar() async {
-    final nroMesa = mesaController.text.trim();
-    if (barcodeText == null || nroMesa.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debe escanear el código y llenar el número de mesa')),
-      );
-      return;
-    }
-
-    setState(() {
-      isLoading = true;
-    });
-
-    // Simula proceso y validación (futuro POST al backend)
-    await Future.delayed(const Duration(seconds: 2));
-
-    final datos = {
-      'codigo_barras': barcodeText,
-      'nro_mesa': nroMesa,
-    };
-    print('Datos listos para enviar: $datos');
-
-    setState(() {
-      isLoading = false;
-    });
-
-    if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const RegistrarVotosPage()),
-      );
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return SizedBox(
+        return Container(
+          color: AppColors.primary,
           height: constraints.maxHeight,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.only(top: 15, left: 16, right: 16, bottom: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ElevatedButton.icon(
-                  onPressed: _pickAndScanImage,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.secondary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                   ),
-                  //formulario
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Escanear codigo de barras'),
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: const [
+                      Text(
+                        'Datos de Boleta Uninominales',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      _InfoText(label: 'Departamento', value: 'Cochabamba'),
+                      _InfoText(label: 'Provincia', value: 'Cercado'),
+                      _InfoText(label: 'Municipio', value: 'Cochabamba'),
+                      _InfoText(label: 'Localidad', value: 'Cochabamba'),
+                      _InfoText(label: 'Recinto', value: 'Colegio Marista'),
+                      _InfoText(label: 'Nro. Mesa', value: '9'),
+                    ],
+                  ),
                 ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 12,
+                  children: const [
+                    _FormInput(label: 'AP'),
+                    _FormInput(label: 'LYP'),
+                    _FormInput(label: 'ADN'),
+                    _FormInput(label: 'APB'),
+                    _FormInput(label: 'SUMATE'),
+                    _FormInput(label: 'NGP'),
+                    _FormInput(label: 'LIBRE'),
+                    _FormInput(label: 'FP'),
+                    _FormInput(label: 'MAS-IPSP'),
+                    _FormInput(label: 'MORENA'),
+                    _FormInput(label: 'UNIDAD'),
+                    _FormInput(label: 'PDC'),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                const Divider(color: Colors.white70),
+                const SizedBox(height: 24),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 12,
+                  children: const [
+                    _FormInput(label: 'VOTOS VALIDOS'),
+                    _FormInput(label: 'VOTOS BLANCOS'),
+                    _FormInput(label: 'VOTOS NULOS'),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                _RegistrarButton(onNext: widget.onNext),
                 const SizedBox(height: 20),
-                Text(
-                  barcodeText != null ? 'Resultado: $barcodeText' : 'Esperando escaneo...',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 24,),
-                const Text(
-                  'Nro. Mesa',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: mesaController,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                    hintText: 'Ingrese nro. mesa',
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.9),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: isLoading ? null : _continuar,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Continuar', style: TextStyle(fontSize: 16)),
-                ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _InfoText extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoText({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '$label:',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FormInput extends StatelessWidget {
+  final String label;
+
+  const _FormInput({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width / 2 - 24,
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              '$label:',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: TextField(
+              style: const TextStyle(color: Colors.white),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white12,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RegistrarButton extends StatelessWidget {
+  final VoidCallback onNext;
+  const _RegistrarButton({required this.onNext});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          backgroundColor: AppColors.secondary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: onNext,  //avanza al siguiente view
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Text(
+              'Registrar Votos',
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+            SizedBox(width: 8),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+          ],
+        ),
+      ),
     );
   }
 }

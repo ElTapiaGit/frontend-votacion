@@ -2,128 +2,206 @@ import 'package:flutter/material.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
 
 class Votacion1View extends StatefulWidget {
-  const Votacion1View({super.key});
+  final VoidCallback onNext;
+
+  const Votacion1View({super.key, required this.onNext});
 
   @override
   State<Votacion1View> createState() => _Votacion1ViewState();
 }
 
 class _Votacion1ViewState extends State<Votacion1View> {
-  String? selectedDepartamento;
-  String? selectedProvincia;
-  String? selectedMunicipio;
-  String? selectedDistrito;
-  String? selectedZona;
-  String? selectedCircunscripcion;
-  String? selectedRecinto;
-
-  final List<String> departamentos = List.generate(9, (i) => 'Dep ${i + 1}');
-  final List<String> provincias = List.generate(5, (i) => 'Provincia ${i + 1}');
-  final List<String> municipios = List.generate(3, (i) => 'Municipio ${i + 1}');
-  final List<String> distritos = List.generate(3, (i) => 'Distrito ${i + 1}');
-  final List<String> zonas = List.generate(3, (i) => 'Zona ${i + 1}');
-  final List<String> circunscripciones = List.generate(3, (i) => 'Circunscripción ${i + 1}');
-  final List<String> recintos = List.generate(3, (i) => 'Recinto ${i + 1}');
-
-  Widget _buildDropdown(String label, String? selectedValue, List<String> options, void Function(String?) onChanged) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label, 
-          style: const TextStyle(
-            color: AppColors.white, 
-            fontSize: 16, 
-            fontWeight: FontWeight.w500,
-          )
-        ),
-        const SizedBox(height: 4),
-        DropdownButtonFormField<String>(
-          value: selectedValue,
-          hint: Text('Seleccione $label'),
-          items: options.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-          onChanged: onChanged,
-          style: const TextStyle(color: Colors.black),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.8),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-          dropdownColor: Colors.white,
-        ),
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return SizedBox(
+        return Container(
+          color: AppColors.primary,
           height: constraints.maxHeight,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.only(top: 15, left: 16, right: 16, bottom: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildDropdown('Departamento', selectedDepartamento, departamentos, (val) {
-                  setState(() {
-                    selectedDepartamento = val;
-                    selectedProvincia = null;
-                  });
-                }),
-                if (selectedDepartamento != null)
-                  _buildDropdown('Provincia', selectedProvincia, provincias, (val) {
-                    setState(() {
-                      selectedProvincia = val;
-                      selectedMunicipio = null;
-                    });
-                  }),
-                if (selectedProvincia != null)
-                  _buildDropdown('Municipio', selectedMunicipio, municipios, (val) {
-                    setState(() {
-                      selectedMunicipio = val;
-                      selectedDistrito = null;
-                    });
-                  }),
-                if (selectedMunicipio != null)
-                  _buildDropdown('Distrito', selectedDistrito, distritos, (val) {
-                    setState(() {
-                      selectedDistrito = val;
-                      selectedZona = null;
-                    });
-                  }),
-                if (selectedDistrito != null)
-                  _buildDropdown('Zona', selectedZona, zonas, (val) {
-                    setState(() {
-                      selectedZona = val;
-                      selectedCircunscripcion = null;
-                    });
-                  }),
-                if (selectedZona != null)
-                  _buildDropdown('Circunscripción', selectedCircunscripcion, circunscripciones, (val) {
-                    setState(() {
-                      selectedCircunscripcion = val;
-                      selectedRecinto = null;
-                    });
-                  }),
-                if (selectedCircunscripcion != null)
-                  _buildDropdown('Recinto', selectedRecinto, recintos, (val) {
-                    setState(() {
-                      selectedRecinto = val;
-                    });
-                  }),
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.secondary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: const [
+                      Text(
+                        'Datos de Boleta Presidenciales',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      _InfoText(label: 'Departamento', value: 'Cochabamba'),
+                      _InfoText(label: 'Provincia', value: 'Cercado'),
+                      _InfoText(label: 'Municipio', value: 'Cochabamba'),
+                      _InfoText(label: 'Localidad', value: 'Cochabamba'),
+                      _InfoText(label: 'Recinto', value: 'Colegio Marista'),
+                      _InfoText(label: 'Nro. Mesa', value: '9'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 12,
+                  children: const [
+                    _FormInput(label: 'AP'),
+                    _FormInput(label: 'LYP'),
+                    _FormInput(label: 'ADN'),
+                    _FormInput(label: 'APB'),
+                    _FormInput(label: 'SUMATE'),
+                    _FormInput(label: 'NGP'),
+                    _FormInput(label: 'LIBRE'),
+                    _FormInput(label: 'FP'),
+                    _FormInput(label: 'MAS-IPSP'),
+                    _FormInput(label: 'MORENA'),
+                    _FormInput(label: 'UNIDAD'),
+                    _FormInput(label: 'PDC'),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                const Divider(color: Colors.white70),
+                const SizedBox(height: 24),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 12,
+                  children: const [
+                    _FormInput(label: 'VOTOS VALIDOS'),
+                    _FormInput(label: 'VOTOS BLANCOS'),
+                    _FormInput(label: 'VOTOS NULOS'),
+                  ],
+                ),
+                const SizedBox(height: 32),
+                _RegistrarButton(onNext: widget.onNext),
+                const SizedBox(height: 20),
               ],
             ),
           ),
         );
-      }
+      },
     );
   }
 }
 
+class _InfoText extends StatelessWidget {
+  final String label;
+  final String value;
 
+  const _InfoText({required this.label, required this.value});
 
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '$label:',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
+class _FormInput extends StatelessWidget {
+  final String label;
+
+  const _FormInput({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width / 2 - 24,
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              '$label:',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 3,
+            child: TextField(
+              style: const TextStyle(color: Colors.white),
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white12,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RegistrarButton extends StatelessWidget {
+  final VoidCallback onNext;
+  const _RegistrarButton({required this.onNext});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          backgroundColor: AppColors.secondary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: onNext,  //avanza al siguiente view
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Text(
+              'Registrar Votos',
+              style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+            SizedBox(width: 8),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+          ],
+        ),
+      ),
+    );
+  }
+}

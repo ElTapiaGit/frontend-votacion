@@ -14,12 +14,29 @@ class RegistrarVotacionPage extends StatefulWidget {
 
 class _RegistrarVotacionPageState extends State<RegistrarVotacionPage> {
   int currentTab = 0;
+  late final List<Widget> _tabViews;
 
-  final List<Widget> _tabViews = const [
-    Votacion1View(),
-    Votacion2View(),
-    SincronizarView(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _tabViews = [
+      Votacion1View(
+        onNext: () {
+          setState(() {
+            currentTab = 1;
+          });
+        },
+      ),
+      Votacion2View(
+        onNext: () {
+          setState(() {
+            currentTab = 2;
+          });
+        },
+      ),
+      const SincronizarView(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,45 +53,23 @@ class _RegistrarVotacionPageState extends State<RegistrarVotacionPage> {
           child: Column(
             children: [
               // Header estilo AppBar
-              Container(
-                width: double.infinity,
-                color: AppColors.primary,
-                padding: const EdgeInsets.only(top: 20, bottom: 10),
-                child: Column(
-                  children: [
-                    const Text(
-                      'ELECCIONES NACIONALES',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Menu TabBar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            _buildTabButton('Presidenciales', 0),
-                            _buildTabButton('Uninominales', 1),
-                            _buildTabButton('Sincronizar votos', 2),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 20, 12, 12),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildTabButton('Presidenciales', 0),
+                      _buildTabButton('Uninominales', 1),
+                      _buildTabButton('Sincronizar votos', 2),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
 
               // Contenido principal
               Expanded(
@@ -82,10 +77,7 @@ class _RegistrarVotacionPageState extends State<RegistrarVotacionPage> {
                   duration: const Duration(milliseconds: 300),
                   child: Container(
                     key: ValueKey(currentTab),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    margin: const EdgeInsets.only(bottom: 10),
                     decoration: BoxDecoration(
-                      //color: Colors.white.withValues(alpha: 0.15), // Efecto cristalino
                       color: Colors.white.withAlpha(30), // Transparencia
                       borderRadius: BorderRadius.circular(0), // Sin borde superior redondeado
                       backgroundBlendMode: BlendMode.overlay,
@@ -105,12 +97,7 @@ class _RegistrarVotacionPageState extends State<RegistrarVotacionPage> {
     final isSelected = currentTab == index;
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            currentTab = index;
-            //resetCampos();
-          });
-        },
+        onTap: null, //tab deshabilitado
         child:  AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           padding: const EdgeInsets.symmetric(vertical: 10),
