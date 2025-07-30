@@ -12,7 +12,7 @@ class CustomInputField extends StatefulWidget {
     required this.controller,
     required this.hintText,
     required this.icon,
-    this.isPassword = false,
+    this.isPassword = false, required String? Function(String? value) validator,
   });
 
   @override

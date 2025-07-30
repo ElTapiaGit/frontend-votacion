@@ -19,7 +19,7 @@ class _Votacion1ViewState extends State<Votacion1View> {
           color: AppColors.primary,
           height: constraints.maxHeight,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.only(top: 15, left: 16, right: 16, bottom: 20),
+            padding: const EdgeInsets.only(bottom: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -49,43 +49,52 @@ class _Votacion1ViewState extends State<Votacion1View> {
                       _InfoText(label: 'Municipio', value: 'Cochabamba'),
                       _InfoText(label: 'Localidad', value: 'Cochabamba'),
                       _InfoText(label: 'Recinto', value: 'Colegio Marista'),
-                      _InfoText(label: 'Nro. Mesa', value: '9'),
+                      _InfoText(label: 'Nro. Mesa', value: '9', highlighted: true),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 12,
-                  children: const [
-                    _FormInput(label: 'AP'),
-                    _FormInput(label: 'LYP'),
-                    _FormInput(label: 'ADN'),
-                    _FormInput(label: 'APB'),
-                    _FormInput(label: 'SUMATE'),
-                    _FormInput(label: 'NGP'),
-                    _FormInput(label: 'LIBRE'),
-                    _FormInput(label: 'FP'),
-                    _FormInput(label: 'MAS-IPSP'),
-                    _FormInput(label: 'MORENA'),
-                    _FormInput(label: 'UNIDAD'),
-                    _FormInput(label: 'PDC'),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Wrap(
+                    spacing: 16,
+                    runSpacing: 12,
+                    children: const [
+                      _FormInput(label: 'AP'),
+                      _FormInput(label: 'LYP'),
+                      _FormInput(label: 'ADN'),
+                      _FormInput(label: 'APB'),
+                      _FormInput(label: 'SUMATE'),
+                      _FormInput(label: 'NGP'),
+                      _FormInput(label: 'LIBRE'),
+                      _FormInput(label: 'FP'),
+                      _FormInput(label: 'MAS-IPSP'),
+                      _FormInput(label: 'MORENA'),
+                      _FormInput(label: 'UNIDAD'),
+                      _FormInput(label: 'PDC'),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 24),
                 const Divider(color: Colors.white70),
                 const SizedBox(height: 24),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 12,
-                  children: const [
-                    _FormInput(label: 'VOTOS VALIDOS'),
-                    _FormInput(label: 'VOTOS BLANCOS'),
-                    _FormInput(label: 'VOTOS NULOS'),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Wrap(
+                    spacing: 16,
+                    runSpacing: 12,
+                    children: const [
+                      _FormInput(label: 'VOTOS VALIDOS'),
+                      _FormInput(label: 'VOTOS BLANCOS'),
+                      _FormInput(label: 'VOTOS NULOS'),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 32),
-                _RegistrarButton(onNext: widget.onNext),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _RegistrarButton(onNext: widget.onNext),
+                ),
                 const SizedBox(height: 20),
               ],
             ),
@@ -99,8 +108,13 @@ class _Votacion1ViewState extends State<Votacion1View> {
 class _InfoText extends StatelessWidget {
   final String label;
   final String value;
+  final bool highlighted;
 
-  const _InfoText({required this.label, required this.value});
+  const _InfoText({
+    required this.label,
+    required this.value,
+    this.highlighted = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -111,16 +125,18 @@ class _InfoText extends StatelessWidget {
         children: [
           Text(
             '$label:',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white70,
               fontWeight: FontWeight.w500,
+              fontSize: highlighted ? 16 : 14,
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+            style: TextStyle(
+              color: highlighted ? Colors.amberAccent : Colors.white,
+              fontWeight: highlighted ? FontWeight.w900 : FontWeight.bold,
+              fontSize: highlighted ? 18 : 14,
             ),
           ),
         ],

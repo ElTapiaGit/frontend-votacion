@@ -87,12 +87,12 @@ class _FiltrarMesaPageState extends State<FiltrarMesaPage> {
       backgroundColor: AppColors.primary,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.zero,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Container(
-                padding: const EdgeInsets.all(20),
+                height: MediaQuery.of(context).size.height * 0.1, 
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [AppColors.secondary, AppColors.primary],
@@ -104,7 +104,7 @@ class _FiltrarMesaPageState extends State<FiltrarMesaPage> {
                   child: Text(
                     'ELECCIONES',
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -112,63 +112,78 @@ class _FiltrarMesaPageState extends State<FiltrarMesaPage> {
                 ),
               ),
               const SizedBox(height: 30),
-              ElevatedButton.icon(
-                onPressed: _pickAndScanImage,
-                icon: const Icon(Icons.qr_code_scanner),
-                label: const Text('Escanear código de barras'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ElevatedButton.icon(
+                  onPressed: _pickAndScanImage,
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: const Text('Escanear código de barras'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    foregroundColor: Colors.white,
                   ),
-                  foregroundColor: Colors.white,
                 ),
               ),
               const SizedBox(height: 20),
-              Text(
-                barcodeText != null ? 'Resultado: $barcodeText' : 'Esperando escaneo...',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w500,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20), 
+                child: Text(
+                  barcodeText != null ? 'Resultado: $barcodeText' : 'Esperando escaneo...',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               const SizedBox(height: 30),
-              const Text(
-                'Nro. Mesa',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20), 
+                child: const Text(
+                  'Código Mesa:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
-              TextField(
-                controller: mesaController,
-                keyboardType: TextInputType.number,
-                style: const TextStyle(color: Colors.black),
-                decoration: InputDecoration(
-                  hintText: 'Ingrese nro. mesa',
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: mesaController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Colors.black),
+                  decoration: InputDecoration(
+                    hintText: 'Ingrese codigo mesa',
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
               ),
               const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: isLoading ? null : _continuar,
-                child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Continuar'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accent,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : _continuar,
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Continuar'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    foregroundColor: Colors.white,
                   ),
-                  foregroundColor: Colors.white,
                 ),
               )
             ],

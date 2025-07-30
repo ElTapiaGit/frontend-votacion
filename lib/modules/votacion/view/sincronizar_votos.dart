@@ -17,6 +17,7 @@ class _SincronizarViewState extends State<SincronizarView> {
   File? _image;
   String? _uploadedUrl;
   bool _isUploading = false;
+  bool _hasObservaciones = false;
   final ImagePicker _picker = ImagePicker();
   final String filestackApiKey = 'ABIM6pHDMRhydfHR0JwjGz';
 
@@ -30,6 +31,17 @@ class _SincronizarViewState extends State<SincronizarView> {
       });
     }
   }
+
+  Future<void> _selectImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+        _uploadedUrl = null;
+      });
+    }
+  }
+
 
   Future<void> _uploadToFilestack() async {
     if (_image == null) {
@@ -119,17 +131,58 @@ class _SincronizarViewState extends State<SincronizarView> {
                         ),
                       ),
                 const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: _captureImage,
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text("Tomar Foto"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _captureImage,
+                        icon: const Icon(Icons.camera_alt),
+                        label: const Text("Tomar Foto", style: TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _selectImage,
+                        icon: const Icon(Icons.photo_library),
+                        label: const Text("Seleccionar", style: TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+
                 const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    const Text(
+                      "Observaciones:",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Checkbox(
+                      value: _hasObservaciones,
+                      onChanged: (value) {
+                        setState(() {
+                          _hasObservaciones = value ?? false;
+                        });
+                      },
+                      checkColor: Colors.white,
+                      activeColor: AppColors.secondary,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _isUploading ? null : _uploadToFilestack,
                   style: ElevatedButton.styleFrom(
@@ -148,7 +201,7 @@ class _SincronizarViewState extends State<SincronizarView> {
                           children: const [
                             Icon(Icons.cloud_upload),
                             SizedBox(width: 10),
-                            Text("Subir a Filestack"),
+                            Text("Subir a Filestack", style: TextStyle(color: Colors.white)),
                           ],
                         ),
                 ),

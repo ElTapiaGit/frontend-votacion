@@ -12,59 +12,72 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-    final LoginController _controller = LoginController();
+  final LoginController _controller = LoginController();
+  final _formKey = GlobalKey<FormState>();
 
-    @override
-    Widget build(BuildContext context) {
-        return Scaffold(
-            body: Container(
-                decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.accent],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Center(
-                    child: SingleChildScrollView(
-                        child: Column(
-                            children: [
-                                const Text(
-                                    "CONTROL DE VOTACIÓN",
-                                    style: TextStyle(
-                                        color: AppColors.white,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                    ),
-                                ),
-                                const SizedBox(height: 20),
-                                Image.asset('assets/images/logo.png', height: 120),
-                                const SizedBox(height: 30),
-                                CustomInputField(
-                                    controller: _controller.usernameController,
-                                    hintText: 'Usuario',
-                                    icon: Icons.person,
-                                ),
-                                const SizedBox(height: 20),
-                                CustomInputField(
-                                    controller: _controller.passwordController,
-                                    hintText: 'Contraseña',
-                                    icon: Icons.lock,
-                                    isPassword: true,
-                                ),
-                                const SizedBox(height: 30),
-                                CustomButton(
-                                    text: 'Ingresar',
-                                    onPressed: () {
-                                      _controller.login(context);
-                                    },
-                                ),
-                            ],
-                        ),
-                    ),
-                ),
+  @override
+  Widget build(BuildContext context) {
+    
+    final double screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.primary, AppColors.accent],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-        );
-    }
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  Text(
+                    "CONTROL DE VOTACIÓN",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: screenHeight * 0.035, // Responsive
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Image.asset('assets/images/logo.png', height: 120),
+                  const SizedBox(height: 30),
+                  CustomInputField(
+                    controller: _controller.usernameController,
+                    hintText: 'Usuario',
+                    icon: Icons.person,
+                    validator: _controller.validateEmail,
+                  ),
+                  const SizedBox(height: 20),
+                  CustomInputField(
+                      controller: _controller.passwordController,
+                      hintText: 'Contraseña',
+                      icon: Icons.lock,
+                      isPassword: true,
+                      validator: _controller.validatePassword,
+                  ),
+                  const SizedBox(height: 30),
+                  CustomButton(
+                    text: 'Ingresar',
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        _controller.login(context);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
