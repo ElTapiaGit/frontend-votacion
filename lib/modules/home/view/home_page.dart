@@ -32,7 +32,7 @@ class HomePage extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.white,
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -41,35 +41,50 @@ class HomePage extends StatelessWidget {
 
             // Botones centrados
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildActionButton(
-                    context: context,
-                    label: 'Registrar Votación',
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/votacion');
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  _buildActionButton(
-                    context: context,
-                    label: 'Sincronizar',
-                    onPressed: () {
-                      //Agregar funcionalidad de sincronización
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  _buildActionButton(
-                    context: context,
-                    label: 'Salir',
-                    onPressed: () {
-                      // Regresar al login
-                      Navigator.pushReplacementNamed(context, '/');
-                    },
-                    color: Colors.redAccent,
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildActionButton(
+                      context: context,
+                      label: 'Registro con IA',
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/registrer-ocr');
+                      },
+                      description: 'Registra votaciones mediante (OCR).',
+                    ),
+                    const SizedBox(height: 20),
+
+                    _buildActionButton(
+                      context: context,
+                      label: 'Registrar Votación',
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/votacion');
+                      },
+                      description: 'Registrar votaciones de forma manual.',
+                    ),
+                    const SizedBox(height: 20),
+                    _buildActionButton(
+                      context: context,
+                      label: 'Sincronizar',
+                      onPressed: () {
+                        //Agregar funcionalidad de sincronización
+                      },
+                      description: 'Envía los datos registrados a la base de datos.',
+                    ),
+                    const SizedBox(height: 20),
+                    _buildActionButton(
+                      context: context,
+                      label: 'Salir',
+                      onPressed: () {
+                        // Regresar al login
+                        Navigator.pushReplacementNamed(context, '/');
+                      },
+                      color: Colors.redAccent,
+                      description: 'Cierra la sesión y regresa al inicio.',
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -83,6 +98,7 @@ class HomePage extends StatelessWidget {
     required String label,
     required VoidCallback onPressed,
     Color? color,
+    required String description,
   }) {
     return SizedBox(
       width: double.infinity,
@@ -94,10 +110,29 @@ class HomePage extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          elevation: 5,
         ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 16, color: Colors.white),
+        child: Column(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 18,  // Un poco mayor para asegurar mayor legibilidad
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 6), // Espaciado entre el texto y la descripción
+            Text(
+              description,
+              style: const TextStyle(
+                fontSize: 14,  // Tamaño de texto más pequeño para la descripción
+                color: Colors.white70,
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

@@ -6,14 +6,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:demo_filestack/core/constants/app_colors.dart';
 
-class SincronizarView extends StatefulWidget {
-  const SincronizarView({super.key});
+class ImageView extends StatefulWidget {
+  const ImageView({super.key});
 
   @override
-  State<SincronizarView> createState() => _SincronizarViewState();
+  State<ImageView> createState() => _ImageViewState();
 }
 
-class _SincronizarViewState extends State<SincronizarView> {
+class _ImageViewState extends State<ImageView> {
   File? _image;
   String? _uploadedUrl;
   bool _isUploading = false;
