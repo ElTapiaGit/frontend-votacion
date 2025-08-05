@@ -25,7 +25,7 @@ class OcrController {
   }
 
   Future<void> sendImageToBackend(File imageFile) async {
-    final uri = Uri.parse('https://oral-hit-plays-thehun.trycloudflare.com/ocr');
+    final uri = Uri.parse('https://hate-verbal-wanted-distribution.trycloudflare.com/ocr');
     final request = http.MultipartRequest('POST', uri);
     request.files.add(
       await http.MultipartFile.fromPath('image', imageFile.path, filename: basename(imageFile.path)),
@@ -65,17 +65,17 @@ class OcrController {
       }
     }
 
-    votes.forEach((party, vote) {
+    /*votes.forEach((party, vote) {
       if (controllers.containsKey(party)) {
         controllers[party]?.text = vote;
       }
-    });
+    });*/
     //datos parse para quitar 0 de la izquierda
-    /*votes.forEach((party, vote) {
+    votes.forEach((party, vote) {
       if (controllers.containsKey(party)) {
         final numero = int.tryParse(vote);
         controllers[party]?.text = numero != null ? numero.toString() : '';
       }
-    });*/
+    });
   }
 }

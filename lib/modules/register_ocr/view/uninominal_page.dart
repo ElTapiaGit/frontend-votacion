@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,7 +16,9 @@ class UninominalView extends StatefulWidget {
 
 class _UninominalViewState extends State<UninominalView> {
   final Map<String, TextEditingController> _controllers = {};
+  final Map<String, GlobalKey<FormInputState>> _inputKeys = {};
   late OcrController _ocrController;
+  bool _isProcessing = false;
   XFile? _image;
 
   @override
@@ -26,8 +29,35 @@ class _UninominalViewState extends State<UninominalView> {
       'MORENA', 'UNIDAD', 'PDC', 'VOTOS VÁLIDOS', 'VOTOS BLANCOS', 'VOTOS NULOS'
     ]) {
       _controllers[label] = TextEditingController();
+      _inputKeys[label] = GlobalKey<FormInputState>();
     }
     _ocrController = OcrController(_controllers);
+  }
+
+  Future<void> _seleccionarYProcesarImagen() async {
+    final picker = ImagePicker();
+    //final pickedImage = await picker.pickImage(source: ImageSource.camera, imageQuality: 100,);//imageQuality para max calidad
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery, imageQuality: 100);
+    if (pickedImage != null) {
+      setState(() {
+        _isProcessing = true;
+        _image = pickedImage;
+      });
+      try {
+        await _ocrController.sendImageToBackend(File(pickedImage.path));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("✅ Imagen procesada correctamente.")),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("❌ Error al procesar la imagen: $e")),
+        );
+      } finally {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
   }
 
   @override
@@ -76,19 +106,22 @@ class _UninominalViewState extends State<UninominalView> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ElevatedButton(
-                    onPressed: () async {
-                      await _ocrController.selectImage((pickedImage) {
-                        setState(() {
-                          _image = pickedImage;
-                        });
-                      });
-                    },
+                    onPressed: _isProcessing ? null : _seleccionarYProcesarImagen,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: AppColors.secondary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text(
+                    child: _isProcessing
+                      ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                      : const Text(
                       'Seleccionar Imagen para OCR',
                       style: TextStyle(fontSize: 16, color: Colors.white),
                     ),
@@ -105,7 +138,7 @@ class _UninominalViewState extends State<UninominalView> {
                         'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
                         'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
                       ])
-                        FormInput(label: label, controller: _controllers[label]!),
+                        FormInput(key: _inputKeys[label], label: label, controller: _controllers[label]!),
                     ],
                   ),
                 ),
@@ -119,14 +152,14 @@ class _UninominalViewState extends State<UninominalView> {
                     runSpacing: 12,
                     children: [
                       for (var label in ['VOTOS VÁLIDOS', 'VOTOS BLANCOS', 'VOTOS NULOS'])
-                        FormInput(label: label, controller: _controllers[label]!),
+                        FormInput(key: _inputKeys[label], label: label, controller: _controllers[label]!),
                     ],
                   ),
                 ),
                 const SizedBox(height: 32),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _RegistrarButton(onNext: widget.onNext),
+                  child: _RegistrarButton(onNext: widget.onNext, inputKeys: _inputKeys,),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -180,7 +213,27 @@ class _InfoText extends StatelessWidget {
 
 class _RegistrarButton extends StatelessWidget {
   final VoidCallback onNext;
-  const _RegistrarButton({required this.onNext});
+  final Map<String, GlobalKey<FormInputState>> inputKeys;
+  const _RegistrarButton({required this.onNext, required this.inputKeys,});
+
+  void _validarYContinuar(BuildContext context) {
+    bool todosValidos = true;
+
+    for (var key in inputKeys.values) {
+      key.currentState?.validarExterno();
+      if (!(key.currentState?.esValido ?? false)) {
+        todosValidos = false;
+      }
+    }
+
+    if (todosValidos) {
+      onNext();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('❌ Corrige los campos inválidos')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +247,7 @@ class _RegistrarButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        onPressed: onNext,  //avanza al siguiente view
+        onPressed: () => _validarYContinuar(context),  //avanza al siguiente view
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [

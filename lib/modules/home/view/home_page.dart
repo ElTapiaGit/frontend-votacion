@@ -49,7 +49,7 @@ class HomePage extends StatelessWidget {
                       context: context,
                       label: 'Registro con IA',
                       onPressed: () {
-                        Navigator.pushNamed(context, '/registrer-ocr');
+                        Navigator.pushNamed(context, '/mesa-ocr');
                       },
                       description: 'Registra votaciones mediante (OCR).',
                     ),
