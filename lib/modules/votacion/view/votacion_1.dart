@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
+import 'package:demo_filestack/data/models/mesa_model.dart';
+import 'package:demo_filestack/modules/votacion/widgets/datos_mesa.dart';
 
 class Votacion1View extends StatefulWidget {
   final VoidCallback onNext;
+  final MesaModel mesa;
 
-  const Votacion1View({super.key, required this.onNext});
+  const Votacion1View({super.key, required this.onNext, required this.mesa,});
 
   @override
   State<Votacion1View> createState() => _Votacion1ViewState();
@@ -23,35 +26,9 @@ class _Votacion1ViewState extends State<Votacion1View> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.secondary],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
-                      Text(
-                        'Datos de Boleta Presidenciales',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      _InfoText(label: 'Departamento', value: 'Cochabamba'),
-                      _InfoText(label: 'Provincia', value: 'Cercado'),
-                      _InfoText(label: 'Municipio', value: 'Cochabamba'),
-                      _InfoText(label: 'Localidad', value: 'Cochabamba'),
-                      _InfoText(label: 'Recinto', value: 'Colegio Marista'),
-                      _InfoText(label: 'Nro. Mesa', value: '9', highlighted: true),
-                    ],
-                  ),
+                HeaderDatosMesa(
+                  titulo: 'Datos de Boleta Presidencial',
+                  mesa: widget.mesa,
                 ),
                 const SizedBox(height: 16),
                 Padding(
@@ -101,46 +78,6 @@ class _Votacion1ViewState extends State<Votacion1View> {
           ),
         );
       },
-    );
-  }
-}
-
-class _InfoText extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool highlighted;
-
-  const _InfoText({
-    required this.label,
-    required this.value,
-    this.highlighted = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '$label:',
-            style: TextStyle(
-              color: Colors.white70,
-              fontWeight: FontWeight.w500,
-              fontSize: highlighted ? 16 : 14,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              color: highlighted ? Colors.amberAccent : Colors.white,
-              fontWeight: highlighted ? FontWeight.w900 : FontWeight.bold,
-              fontSize: highlighted ? 18 : 14,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

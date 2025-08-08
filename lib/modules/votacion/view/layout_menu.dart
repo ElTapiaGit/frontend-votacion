@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
+import 'package:demo_filestack/data/models/mesa_model.dart';
 import 'package:demo_filestack/modules/votacion/view/votacion_1.dart';
 import 'package:demo_filestack/modules/votacion/view/votacion_2.dart';
 import 'package:demo_filestack/modules/votacion/view/sincronizar_votos.dart';
 
-
 class RegistrarVotacionPage extends StatefulWidget {
-  const RegistrarVotacionPage({super.key});
+  final MesaModel mesa;
+  const RegistrarVotacionPage({super.key,  required this.mesa});
 
   @override
   State<RegistrarVotacionPage> createState() => _RegistrarVotacionPageState();
@@ -25,14 +26,14 @@ class _RegistrarVotacionPageState extends State<RegistrarVotacionPage> {
           setState(() {
             currentTab = 1;
           });
-        },
+        }, mesa: widget.mesa,
       ),
       Votacion2View(
         onNext: () {
           setState(() {
             currentTab = 2;
           });
-        },
+        }, mesa: widget.mesa,
       ),
       const SincronizarView(),
     ];

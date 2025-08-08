@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
 import 'package:demo_filestack/modules/votacion/view/layout_menu.dart';
+import 'package:demo_filestack/modules/votacion/controller/filtrar_controller.dart';
 
 class FiltrarMesaPage extends StatefulWidget {
   const FiltrarMesaPage({super.key});
@@ -12,73 +13,59 @@ class FiltrarMesaPage extends StatefulWidget {
 }
 
 class _FiltrarMesaPageState extends State<FiltrarMesaPage> {
-  String? barcodeText;
-  final TextEditingController mesaController = TextEditingController();
+  final FiltrarMesaController _controller = FiltrarMesaController();
   bool isLoading = false;
+  String? _barcodeText;
+  String _scanStatusMessage = 'Esperando escaneo...';
 
   Future<void> _pickAndScanImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
+    final scanned = await _controller.pickAndScanImage();
+    setState(() {
+      _barcodeText = scanned;
 
-    if (pickedFile != null) {
-      final inputImage = InputImage.fromFilePath(pickedFile.path);
-      final barcodeScanner = BarcodeScanner();
-
-      final barcodes = await barcodeScanner.processImage(inputImage);
-      if (barcodes.isNotEmpty) {
-        final code = barcodes.first.rawValue ?? 'Código no reconocido';
-        setState(() {
-          barcodeText = code;
-        });
-      } else {
-        setState(() {
-          barcodeText = 'No se detectó ningún código';
-        });
+      if (scanned != null) {
+        _scanStatusMessage = 'Resultado: $scanned';
+      } else if (_controller.barcodeText == null) {
+        _scanStatusMessage = 'No se pudo escanear el código. Intente nuevamente.';
       }
+    });
 
-      await barcodeScanner.close();
-    } else {
-      setState(() {
-        barcodeText = 'No se seleccionó ninguna imagen.';
-      });
+    if (scanned == null) {
+      //en caso de no encontrar codigo
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo escanear el codigo. Intente nuevamente'),
+          ),
+        );
+      }
     }
+    /*if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Código escaneado: $scanned'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }*/
   }
 
   Future<void> _continuar() async {
-    final nroMesa = mesaController.text.trim();
+    if (!_controller.validarCampos(context)) return;
 
-    // Validar que al menos uno de los dos campos tenga información
-    if ((barcodeText == null || barcodeText!.isEmpty || barcodeText == 'No se detectó ningún código') &&
-        nroMesa.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debe ingresar el número de mesa o escanear un código')),
-      );
-      return;
-    }
+    setState(() => isLoading = true);
+    final mesa = await _controller.obtenerDatosMesa(context, scannedValue: _barcodeText);
 
-    setState(() {
-      isLoading = true;
-    });
-
-    await Future.delayed(const Duration(seconds: 2)); //espere 2 segundo de carga
-
-    final datos = {
-      if (barcodeText != null && barcodeText!.isNotEmpty && barcodeText != 'No se detectó ningún código')
-        'codigo_barras': barcodeText,
-      if (nroMesa.isNotEmpty) 'nro_mesa': nroMesa,
-    };
-    print('Datos para enviar: $datos');
+    if (mesa == null) return;
 
     if (mounted) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const RegistrarVotacionPage()),
+        MaterialPageRoute(builder: (_) => RegistrarVotacionPage(mesa: mesa)),
       );
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    setState(() => isLoading = false);
   }
 
   @override
@@ -132,7 +119,7 @@ class _FiltrarMesaPageState extends State<FiltrarMesaPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20), 
                 child: Text(
-                  barcodeText != null ? 'Resultado: $barcodeText' : 'Esperando escaneo...',
+                  _scanStatusMessage,
                   style: const TextStyle(
                     fontSize: 16,
                     color: AppColors.white,
@@ -156,7 +143,7 @@ class _FiltrarMesaPageState extends State<FiltrarMesaPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: TextField(
-                  controller: mesaController,
+                  controller: _controller.mesaController,
                   keyboardType: TextInputType.number,
                   style: const TextStyle(color: Colors.black),
                   decoration: InputDecoration(

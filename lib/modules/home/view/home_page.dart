@@ -1,8 +1,35 @@
+import 'package:demo_filestack/modules/home/controller/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final HomeController _controller = HomeController();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null || token.isEmpty) {
+      // No hay token, redirigir al login
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,10 +103,7 @@ class HomePage extends StatelessWidget {
                     _buildActionButton(
                       context: context,
                       label: 'Salir',
-                      onPressed: () {
-                        // Regresar al login
-                        Navigator.pushReplacementNamed(context, '/');
-                      },
+                      onPressed: () => _controller.logout(context),
                       color: Colors.redAccent,
                       description: 'Cierra la sesión y regresa al inicio.',
                     ),

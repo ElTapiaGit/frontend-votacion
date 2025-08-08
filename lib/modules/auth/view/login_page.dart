@@ -14,6 +14,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final LoginController _controller = LoginController();
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,27 +49,49 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 20),
                   Image.asset('assets/images/logo.png', height: 120),
+
                   const SizedBox(height: 30),
                   CustomInputField(
                     controller: _controller.usernameController,
                     hintText: 'Usuario',
                     icon: Icons.person,
-                    validator: _controller.validateEmail,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'El correo es obligatorio';
+                      }
+                      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                      if (!emailRegex.hasMatch(value.trim())) {
+                        return 'Ingrese un correo electrónico válido';
+                      }
+                      return null;
+                    },
                   ),
+
                   const SizedBox(height: 20),
                   CustomInputField(
-                      controller: _controller.passwordController,
-                      hintText: 'Contraseña',
-                      icon: Icons.lock,
-                      isPassword: true,
-                      validator: _controller.validatePassword,
+                    controller: _controller.passwordController,
+                    hintText: 'Contraseña',
+                    icon: Icons.lock,
+                    isPassword: true,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'La contraseña es obligatoria';
+                      }
+                      return null;
+                    },
                   ),
+                  
                   const SizedBox(height: 30),
                   CustomButton(
                     text: 'Ingresar',
+                    isLoading: _isLoading,
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        _controller.login(context);
+                        _controller.login(context, (value) {
+                          setState(() {
+                            _isLoading = value;
+                          });
+                        });
                       }
                     },
                   ),

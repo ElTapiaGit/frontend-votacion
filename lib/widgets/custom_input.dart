@@ -6,13 +6,15 @@ class CustomInputField extends StatefulWidget {
   final String hintText;
   final IconData icon;
   final bool isPassword;
+  final String? Function(String?)? validator;
 
   const CustomInputField({
     super.key,
     required this.controller,
     required this.hintText,
     required this.icon,
-    this.isPassword = false, required String? Function(String? value) validator,
+    this.isPassword = false,
+    this.validator,
   });
 
   @override
@@ -24,9 +26,10 @@ class _CustomInputFieldState extends State<CustomInputField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: widget.controller,
       obscureText: widget.isPassword ? _obscureText : false,
+      validator: widget.validator,
       decoration: InputDecoration(
         filled: true,
         fillColor: AppColors.white,
@@ -39,6 +42,14 @@ class _CustomInputFieldState extends State<CustomInputField> {
               )
             : null,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
       ),
     );
   }

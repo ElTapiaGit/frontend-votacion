@@ -21,7 +21,6 @@ class AppRoutes {
     home: (_) => const HomePage(),
     voting: (_) => const FiltrarMesaPage(), 
     registrerOcr: (_) => const RegistrarOcrPage(),
-    registrarVotacion: (_) => const RegistrarVotacionPage(),
     mesaocr: (_) => const MesaPage(),
     registrarocr: (_) => const OcrPage(),
   };
