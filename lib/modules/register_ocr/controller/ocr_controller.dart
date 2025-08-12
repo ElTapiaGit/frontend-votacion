@@ -25,7 +25,7 @@ class OcrController {
   }
 
   Future<void> sendImageToBackend(File imageFile) async {
-    final uri = Uri.parse('https://hate-verbal-wanted-distribution.trycloudflare.com/ocr');
+    final uri = Uri.parse('https://api-ocr-google.onrender.com/ocr');
     final request = http.MultipartRequest('POST', uri);
     request.files.add(
       await http.MultipartFile.fromPath('image', imageFile.path, filename: basename(imageFile.path)),

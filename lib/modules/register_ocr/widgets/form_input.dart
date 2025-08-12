@@ -1,16 +1,10 @@
-// lib/modules/ocr/widgets/form_input.dart
 import 'package:flutter/material.dart';
-import 'package:demo_filestack/modules/register_ocr/controller/form_validator.dart';
 
 class FormInput extends StatefulWidget {
   final String label;
   final TextEditingController controller;
 
-  const FormInput({
-    required this.label,
-    required this.controller,
-    super.key,
-  });
+  const FormInput({required this.label, required this.controller, super.key,});
 
   @override
   State<FormInput> createState() => FormInputState();
@@ -19,14 +13,21 @@ class FormInput extends StatefulWidget {
 class FormInputState extends State<FormInput> {
   bool _mostrarError = false;
 
-  /// Metodo llamado para forzar validacion
+  // Validación simple: número entero entre 0 y 240
+  bool _esNumeroValido(String? valor) {
+    if (valor == null || valor.trim().isEmpty) return false;
+    final numero = int.tryParse(valor);
+    return numero != null && numero >= 0 && numero <= 240;
+  }
+
+  /// Método llamado para forzar validación desde fuera (controller)
   void validarExterno() {
     setState(() {
-      _mostrarError = !FormValidator.esNumeroValido(widget.controller.text);
+      _mostrarError = !_esNumeroValido(widget.controller.text);
     });
   }
 
-  bool get esValido => FormValidator.esNumeroValido(widget.controller.text);
+  bool get esValido => _esNumeroValido(widget.controller.text);
 
   @override
   Widget build(BuildContext context) {

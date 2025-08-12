@@ -1,59 +1,30 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
-import 'package:demo_filestack/modules/register_ocr/controller/ocr_controller.dart';
+import 'package:demo_filestack/data/models/mesa_model.dart';
 import 'package:demo_filestack/modules/register_ocr/widgets/form_input.dart';
+import 'package:demo_filestack/modules/register_ocr/widgets/datos_mesa.dart';
+import 'package:demo_filestack/modules/register_ocr/controller/presidencial_controller.dart';
 
 class PresidencialView extends StatefulWidget {
   final VoidCallback onNext;
+  final MesaModel mesa;
 
-  const PresidencialView({super.key, required this.onNext});
+  const PresidencialView({super.key, required this.onNext, required this.mesa,});
 
   @override
   State<PresidencialView> createState() => _PresidencialViewState();
 }
 
 class _PresidencialViewState extends State<PresidencialView> {
-  final Map<String, TextEditingController> _controllers = {};
-  final Map<String, GlobalKey<FormInputState>> _inputKeys = {};
-  late OcrController _ocrController;
-  bool _isProcessing = false;
+  late PresidencialController _controller;
 
   @override
   void initState() {
     super.initState();
-    for (var label in [
-      'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP', 'LIBRE', 'FP', 'MAS-IPSP',
-      'MORENA', 'UNIDAD', 'PDC', 'VOTOS VÁLIDOS', 'VOTOS BLANCOS', 'VOTOS NULOS'
-    ]) {
-      _controllers[label] = TextEditingController();
-      _inputKeys[label] = GlobalKey<FormInputState>();
-    }
-    _ocrController = OcrController(_controllers);
-  }
-
-  Future<void> _capturarYProcesarImagen() async {
-    final picker = ImagePicker();
-    final pickedImage = await picker.pickImage(source: ImageSource.camera, imageQuality: 100,);//imageQuality para max calidad
-
-    if (pickedImage != null) {
-      setState(() => _isProcessing = true);
-      try {
-        await _ocrController.sendImageToBackend(
-          File(pickedImage.path),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("✅ Imagen procesada correctamente.")),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("❌ Error al procesar la imagen: $e")),
-        );
-      } finally {
-        setState(() => _isProcessing = false);
-      }
-    }
+    _controller = PresidencialController(
+      mesa: widget.mesa,
+      onNext: widget.onNext,
+    );
   }
 
   @override
@@ -68,41 +39,17 @@ class _PresidencialViewState extends State<PresidencialView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.secondary],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
-                      Text(
-                        'Datos de Boleta Presidenciales',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      _InfoText(label: 'Departamento', value: 'Cochabamba'),
-                      _InfoText(label: 'Provincia', value: 'Cercado'),
-                      _InfoText(label: 'Municipio', value: 'Cochabamba'),
-                      _InfoText(label: 'Localidad', value: 'Cochabamba'),
-                      _InfoText(label: 'Recinto', value: 'Colegio Marista'),
-                      _InfoText(label: 'Nro. Mesa', value: '9', highlighted: true),
-                    ],
-                  ),
+                // Header datos mesa
+                HeaderDatosMesa(
+                  titulo: 'Datos de Boleta Presidencial',
+                  mesa: widget.mesa,
                 ),
                 const SizedBox(height: 16),
+                // Botón OCR
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ElevatedButton.icon(
-                    onPressed: _isProcessing ? null : _capturarYProcesarImagen,
+                    onPressed: _controller.isProcessing ? null : () => _controller.capturarYProcesarImagen(context, setState),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: AppColors.secondary,
@@ -112,12 +59,13 @@ class _PresidencialViewState extends State<PresidencialView> {
                     ),
                     icon: const Icon(Icons.camera_alt, color: Colors.white),
                     label: Text(
-                      _isProcessing ? "Procesando..." : 'Tomar Foto para OCR',
+                      _controller.isProcessing ? "Procesando..." : 'Tomar Foto para OCR',
                       style: const TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
+                // Campos partidos políticos
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Wrap(
@@ -128,13 +76,14 @@ class _PresidencialViewState extends State<PresidencialView> {
                         'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
                         'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
                       ])
-                        FormInput(key: _inputKeys[label], label: label, controller: _controllers[label]!),
+                        FormInput(key: _controller.inputKeys[label], label: label, controller: _controller.controllers[label]!,),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
                 const Divider(color: Colors.white70),
                 const SizedBox(height: 24),
+                // Campos totales
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Wrap(
@@ -142,14 +91,52 @@ class _PresidencialViewState extends State<PresidencialView> {
                     runSpacing: 12,
                     children: [
                       for (var label in ['VOTOS VÁLIDOS', 'VOTOS BLANCOS', 'VOTOS NULOS'])
-                        FormInput(key: _inputKeys[label], label: label, controller: _controllers[label]!),
+                        FormInput(key: _controller.inputKeys[label], label: label, controller: _controller.controllers[label]!,),
                     ],
                   ),
                 ),
                 const SizedBox(height: 32),
+                // Botón registrar
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _RegistrarButton(onNext: widget.onNext, inputKeys: _inputKeys,),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: AppColors.secondary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _controller.isSubmitting
+                        ? null
+                        : () async {
+                            await _controller.validarYContinuar(context, setState);
+                          },
+                      child: _controller.isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text(
+                                'Registrar Votos',
+                                style: TextStyle(fontSize: 16, color: Colors.white),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward_ios,
+                                  size: 16, color: Colors.white),
+                            ],
+                          ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -157,99 +144,6 @@ class _PresidencialViewState extends State<PresidencialView> {
           ),
         );
       },
-    );
-  }
-}
-
-class _InfoText extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool highlighted;
-
-  const _InfoText({
-    required this.label,
-    required this.value,
-    this.highlighted = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '$label:',
-            style: TextStyle(
-              color: Colors.white70,
-              fontWeight: FontWeight.w500,
-              fontSize: highlighted ? 16 : 14,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              color: highlighted ? Colors.amberAccent : Colors.white,
-              fontWeight: highlighted ? FontWeight.w900 : FontWeight.bold,
-              fontSize: highlighted ? 18 : 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RegistrarButton extends StatelessWidget {
-  final VoidCallback onNext;
-  final Map<String, GlobalKey<FormInputState>> inputKeys;
-  const _RegistrarButton({required this.onNext, required this.inputKeys,});
-  
-  void _validarYContinuar(BuildContext context) {
-    bool todosValidos = true;
-
-    for (var key in inputKeys.values) {
-      key.currentState?.validarExterno();
-      if (!(key.currentState?.esValido ?? false)) {
-        todosValidos = false;
-      }
-    }
-
-    if (todosValidos) {
-      onNext();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('❌ Corrige los campos inválidos')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          backgroundColor: AppColors.secondary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        onPressed: () => _validarYContinuar(context),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              'Registrar Votos',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
-            SizedBox(width: 8),
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
-          ],
-        ),
-      ),
     );
   }
 }

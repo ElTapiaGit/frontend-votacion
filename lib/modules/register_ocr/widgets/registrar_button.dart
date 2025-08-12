@@ -4,7 +4,7 @@ import 'package:demo_filestack/core/constants/app_colors.dart';
 
 class RegistrarButton extends StatelessWidget {
   final VoidCallback onPressed;
-  const RegistrarButton({required this.onPressed});
+  const RegistrarButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
+import 'package:demo_filestack/data/models/mesa_model.dart';
 import 'package:demo_filestack/modules/register_ocr/view/presidencial_page.dart';
 import 'package:demo_filestack/modules/register_ocr/view/uninominal_page.dart';
 import 'package:demo_filestack/modules/register_ocr/view/image_page.dart';
 
 
 class RegistrarOcrPage extends StatefulWidget {
-  const RegistrarOcrPage({super.key});
+  final MesaModel mesa;
+  const RegistrarOcrPage({super.key, required this.mesa});
 
   @override
   State<RegistrarOcrPage> createState() => _RegistrarOcrPageState();
@@ -25,16 +27,18 @@ class _RegistrarOcrPageState extends State<RegistrarOcrPage> {
           setState(() {
             currentTab = 1;
           });
-        },
+        }, mesa: widget.mesa,
       ),
       UninominalView(
         onNext: () {
           setState(() {
             currentTab = 2;
           });
-        },
+        }, mesa: widget.mesa,
       ),
-      const ImageView(),
+      ImagenView(
+        mesa: widget.mesa,
+      ),
     ];
   }
 

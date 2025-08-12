@@ -35,7 +35,9 @@ class _RegistrarVotacionPageState extends State<RegistrarVotacionPage> {
           });
         }, mesa: widget.mesa,
       ),
-      const SincronizarView(),
+      SincronizarView(
+        mesa: widget.mesa,
+      ),
     ];
   }
 

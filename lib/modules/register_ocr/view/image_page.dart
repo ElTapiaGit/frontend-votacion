@@ -1,89 +1,98 @@
 
+import 'package:demo_filestack/data/models/mesa_model.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 import 'package:demo_filestack/core/constants/app_colors.dart';
+import 'package:demo_filestack/modules/register_ocr/controller/imagen_controller.dart';
+import 'package:dio/dio.dart';
 
-class ImageView extends StatefulWidget {
-  const ImageView({super.key});
+class ImagenView extends StatefulWidget {
+  final MesaModel mesa;
+  const ImagenView({super.key, required this.mesa});
 
   @override
-  State<ImageView> createState() => _ImageViewState();
+  State<ImagenView> createState() => _ImagenViewState();
 }
 
-class _ImageViewState extends State<ImageView> {
+class _ImagenViewState extends State<ImagenView> {
   File? _image;
   String? _uploadedUrl;
   bool _isUploading = false;
   bool _hasObservaciones = false;
-  final ImagePicker _picker = ImagePicker();
-  final String filestackApiKey = 'ABIM6pHDMRhydfHR0JwjGz';
+
+  late ImagenController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = ImagenController(
+      filestackApiKey: 'ABIM6pHDMRhydfHR0JwjGz',
+      dio: Dio(),
+    );
+  }
 
   Future<void> _captureImage() async {
     //final pickedFile = await _picker.pickImage(source: ImageSource.gallery); //para seleccionar
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera); //para tomar foto
-    if (pickedFile != null) {
+    final file = await _controller.captureImage(); //para tomar foto
+    if (file != null) {
       setState(() {
-        _image = File(pickedFile.path);
+        _image = file;
         _uploadedUrl = null;
       });
     }
   }
 
   Future<void> _selectImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+    final file = await _controller.selectImage();
+    if (file != null) {
       setState(() {
-        _image = File(pickedFile.path);
+        _image = file;
         _uploadedUrl = null;
       });
     }
   }
 
-
   Future<void> _uploadToFilestack() async {
     if (_image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("⚠️ Primero tome una imagen.")),
+        const SnackBar(content: Text("Primero tome o seleccione una imagen.")),
       );
       return;
     }
 
     setState(() => _isUploading = true); // Inicia el loading
+    final url = await _controller.uploadToFilestack(_image!); //subir a filestack
 
-    final uri = Uri.parse('https://www.filestackapi.com/api/store/S3?key=$filestackApiKey');
+    if (url != null) {
+      setState(() {
+        _uploadedUrl = url;
+      });
 
-    try {
-      final request = http.MultipartRequest('POST', uri)
-        ..files.add(await http.MultipartFile.fromPath('fileUpload', _image!.path));
+      // Enviar al backend
+      final acta = await _controller.enviarActa(
+        mesaId: widget.mesa.id,
+        fotoUrl: url,
+        observado: _hasObservaciones,
+      );
 
-      final response = await request.send();
-      final responseData = await http.Response.fromStream(response);
+      setState(() => _isUploading = false);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(responseData.body);
-        final url = data['url'] ?? 'Sin URL';
-
-        setState(() {
-          _uploadedUrl = url;
-        });
-
+      if (acta != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("✅ Imagen subida con éxito.")),
+          const SnackBar(content: Text("✅ Acta registrada con éxito.")),
         );
+        // Cierra esta vista y regresa a la anterior (FiltrarMesaPage)
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("❌ Error al subir: ${response.statusCode}")),
+          const SnackBar(content: Text("❌ Error al registrar el acta.")),
         );
       }
-    } catch (e) {
+    } else {
+      setState(() => _isUploading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Error inesperado: $e")),
+        const SnackBar(content: Text("❌ Error al subir la imagen.")),
       );
-    } finally {
-      setState(() => _isUploading = false); // Finaliza el loading
     }
   }
 
@@ -162,7 +171,6 @@ class _ImageViewState extends State<ImageView> {
                 ),
 
                 const SizedBox(height: 12),
-
                 Row(
                   children: [
                     const Text(
@@ -182,28 +190,22 @@ class _ImageViewState extends State<ImageView> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton(
+                 const SizedBox(height: 20),
+                ElevatedButton.icon(
                   onPressed: _isUploading ? null : _uploadToFilestack,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.secondary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: _isUploading
+                  icon: const Icon(Icons.cloud_upload),
+                  label: _isUploading
                       ? const SizedBox(
                           height: 24,
                           width: 24,
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.cloud_upload),
-                            SizedBox(width: 10),
-                            Text("Subir Imagen", style: TextStyle(color: Colors.white)),
-                          ],
-                        ),
+                      : const Text("Subir y Enviar", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 if (_uploadedUrl != null)

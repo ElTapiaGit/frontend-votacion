@@ -4,10 +4,13 @@ import 'package:retrofit/error_logger.dart';
 import 'package:demo_filestack/core/api/token_interceptor.dart';
 import 'package:demo_filestack/data/models/user_model.dart';
 import 'package:demo_filestack/data/models/mesa_model.dart';
+import 'package:demo_filestack/data/models/votosPresidencial_model.dart';
+import 'package:demo_filestack/data/models/votosUninominal_model.dart';
+import 'package:demo_filestack/data/models/acta_model.dart';
 
 part 'api_service.g.dart';
 
-@RestApi(baseUrl: "https://placed-fleet-faq-peripherals.trycloudflare.com/api")
+@RestApi(baseUrl: "https://forwarding-body-barry-accepting.trycloudflare.com/api")
 abstract class ApiService {
   factory ApiService(Dio dio, {String? baseUrl}) {
     dio.interceptors.add(TokenInterceptor());
@@ -28,4 +31,19 @@ abstract class ApiService {
 
   @GET("/mesas/num/{numMesa}")
   Future<MesaModel> getMesaByNum(@Path("numMesa") String numMesa);
+
+  @GET("/votospresidenciales/mesa/{mesaId}")
+  Future<VotoPresidencialResponse?> obtenerVotoPresidencialPorMesa(@Path("mesaId") String mesaId);
+
+  @GET("/uninominal/mesa/{mesaId}")
+  Future<VotoUninominalResponse?> obtenerVotoUninominalPorMesa(@Path("mesaId") String mesaId);
+
+  @POST("/votospresidenciales")
+  Future<VotoPresidencialResponse> enviarVotosPresidenciales(@Body() VotoPresidencialRequest request);
+
+  @POST("/uninominal")
+  Future<VotoUninominalResponse> enviarVotoUninominal(@Body() VotoUninominalRequest request);
+  
+  @POST("/acta")
+  Future<ActaModel> crearActa(@Body() ActaRequest request);
 }

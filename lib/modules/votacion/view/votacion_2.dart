@@ -1,7 +1,10 @@
+import 'package:demo_filestack/core/api/api_service.dart';
 import 'package:demo_filestack/data/models/mesa_model.dart';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
 import 'package:demo_filestack/modules/votacion/widgets/datos_mesa.dart';
+import 'package:demo_filestack/modules/votacion/controller/votosUninominal_controller.dart';
 
 class Votacion2View extends StatefulWidget {
   final VoidCallback onNext;
@@ -14,6 +17,116 @@ class Votacion2View extends StatefulWidget {
 }
 
 class _Votacion2ViewState extends State<Votacion2View> {
+  late final Map<String, TextEditingController> _controllers;
+  late final VotosUninominalController _controller;
+  late final Map<String, String?> _errores;
+  bool _isSubmitting = false;
+
+  final List<String> partidos = [
+    'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
+    'LIBRE', 'FP', 'MAS_IPSP', 'MORENA', 'UNIDAD', 'PDC'
+  ];
+  final List<String> votosEspeciales = [
+    'VOTOS VALIDOS', 'VOTOS BLANCOS', 'VOTOS NULOS'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controllers = {};
+    _errores = {};
+    for (var label in [...partidos, ...votosEspeciales]) {
+      _controllers[label] = TextEditingController();
+      _errores[label] = null; // Por defecto no hay errores
+    }
+
+    _controller = VotosUninominalController(ApiService(Dio()));
+  }
+  
+  @override
+  void dispose() {
+    for (var c in _controllers.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  bool _validarCampos() {
+    const int maxVotos = 240;
+    bool esValido = true;
+
+    int sumaVotosPartidos = 0;
+    int sumaVotosEspeciales = 0;
+
+    // Validar y sumar votos por partido
+    for (var label in partidos) {
+      final text = _controllers[label]?.text.trim() ?? '';
+      final valor = int.tryParse(text);
+      if (text.isEmpty || valor == null || valor < 0) {
+        esValido = false;
+        _errores[label] = 'El valor para "$label" es inválido'; // Asignamos el error
+      } else {
+        sumaVotosPartidos += valor;
+        _errores[label] = null; // Eliminamos el error si el campo es válido
+      }
+    }
+
+    if (sumaVotosPartidos > maxVotos) {
+      esValido = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ La suma de votos por partidos supera el máximo de $maxVotos. Total: $sumaVotosPartidos')),
+      );
+    }
+
+    // Validar y sumar votos especiales
+    for (var label in votosEspeciales) {
+      final text = _controllers[label]?.text.trim() ?? '';
+      final valor = int.tryParse(text);
+      if (text.isEmpty || valor == null || valor < 0) {
+        esValido = false;
+        _errores[label] = 'El valor para "$label" es inválido'; // Asignamos el error
+      } else {
+        sumaVotosEspeciales += valor;
+        _errores[label] = null; // Eliminamos el error si el campo es válido
+      }
+    }
+
+    if (sumaVotosEspeciales > maxVotos) {
+      esValido = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ La suma de VOTOS VALIDOS, BLANCOS y NULOS supera $maxVotos. Total: $sumaVotosEspeciales')),
+      );
+    }
+
+    return esValido;
+  }
+
+
+  void _onSubmit() {
+    if (_isSubmitting) return;
+    if (!_validarCampos()) return;
+
+    _controller.enviarVotos(
+      mesaId: widget.mesa.id,
+      controllers: _controllers,
+      onLoading: () => setState(() => _isSubmitting = true),
+      onFinish: () => setState(() => _isSubmitting = false),
+      onSuccess: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('✅ Votos registrados correctamente')),
+        );
+        widget.onNext();
+      },
+      onError: (msg) {
+        print('❌ Error al enviar votación: $msg');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('❌ Error al enviar votación: $msg')),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -37,20 +150,13 @@ class _Votacion2ViewState extends State<Votacion2View> {
                   child: Wrap(
                     spacing: 16,
                     runSpacing: 12,
-                    children: const [
-                      _FormInput(label: 'AP'),
-                      _FormInput(label: 'LYP'),
-                      _FormInput(label: 'ADN'),
-                      _FormInput(label: 'APB'),
-                      _FormInput(label: 'SUMATE'),
-                      _FormInput(label: 'NGP'),
-                      _FormInput(label: 'LIBRE'),
-                      _FormInput(label: 'FP'),
-                      _FormInput(label: 'MAS-IPSP'),
-                      _FormInput(label: 'MORENA'),
-                      _FormInput(label: 'UNIDAD'),
-                      _FormInput(label: 'PDC'),
-                    ],
+                    children: partidos
+                      .map((label) => _FormInput(
+                            label: label,
+                            controller: _controllers[label]!,
+                            hasError: _errores[label] != null
+                          ))
+                      .toList(),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -61,17 +167,19 @@ class _Votacion2ViewState extends State<Votacion2View> {
                   child: Wrap(
                     spacing: 16,
                     runSpacing: 12,
-                    children: const [
-                      _FormInput(label: 'VOTOS VALIDOS'),
-                      _FormInput(label: 'VOTOS BLANCOS'),
-                      _FormInput(label: 'VOTOS NULOS'),
-                    ],
+                    children: votosEspeciales
+                      .map((label) => _FormInput(
+                            label: label,
+                            controller: _controllers[label]!,
+                            hasError: _errores[label] != null,
+                          ))
+                      .toList(),
                   ),
                 ),
                 const SizedBox(height: 32),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _RegistrarButton(onNext: widget.onNext),
+                  child: _RegistrarButton(onPressed: _onSubmit, isLoading: _isSubmitting,),
                 ),
                 const SizedBox(height: 20),
               ],
@@ -84,8 +192,10 @@ class _Votacion2ViewState extends State<Votacion2View> {
 }
 class _FormInput extends StatelessWidget {
   final String label;
+  final TextEditingController controller;
+  final bool hasError;
 
-  const _FormInput({required this.label});
+  const _FormInput({required this.label, required this.controller, this.hasError = false});
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +217,7 @@ class _FormInput extends StatelessWidget {
           Expanded(
             flex: 3,
             child: TextField(
+              controller: controller,
               style: const TextStyle(color: Colors.white),
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
@@ -115,6 +226,17 @@ class _FormInput extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: hasError ? Colors.redAccent : Colors.white, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: hasError ? Colors.redAccent : Colors.transparent,
+                    width: 1,
+                  ),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               ),
@@ -127,8 +249,9 @@ class _FormInput extends StatelessWidget {
 }
 
 class _RegistrarButton extends StatelessWidget {
-  final VoidCallback onNext;
-  const _RegistrarButton({required this.onNext});
+  final VoidCallback onPressed;
+  final bool isLoading;
+  const _RegistrarButton({required this.onPressed, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -142,18 +265,27 @@ class _RegistrarButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        onPressed: onNext,  //avanza al siguiente view
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              'Registrar Votos',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
-            SizedBox(width: 8),
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
-          ],
-        ),
+        onPressed: isLoading ? null : onPressed,  //avanza al siguiente view
+        child: isLoading
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text(
+                    'Registrar Votos',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+                ],
+              ),
       ),
     );
   }
