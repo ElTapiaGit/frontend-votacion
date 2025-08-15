@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -49,13 +50,26 @@ class UninominalController {
     if (pickedImage != null) {
       setState(() => isProcessing = true);
       try {
-        await ocrController.sendImageToBackend(File(pickedImage.path));
+        await ocrController
+          .sendImageToBackend(File(pickedImage.path))
+          .timeout(const Duration(seconds: 30));
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("✅ Imagen procesada correctamente.")),
         );
+      } on TimeoutException {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("⏱️ El proceso demoro demasiado. Intenta nuevamente."),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("❌ Error al procesar la imagen: $e")),
+          SnackBar(
+            content: Text("❌ Error al procesar la imagen: $e"),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       } finally {
         setState(() => isProcessing = false);
@@ -80,7 +94,9 @@ class UninominalController {
     // Si hay campos inválidos
     if (!todosValidos) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('❌ Corrige los campos inválidos')),
+        const SnackBar(
+          content: Text('❌ Corrige los campos inválidos'),
+        ),
       );
       return;
     }
@@ -112,13 +128,51 @@ class UninominalController {
         votosNulos: votosNulos,
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Votación registrada correctamente')),
+        const SnackBar(
+          content: Text(
+            '✅ Votación registrada correctamente',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+        ),
       );
       onNext();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Error al enviar: $e')),
-      );
+      String mensajeError = '';
+
+        if (e is DioError) {
+        // Si la API respondió con un mensaje específico
+        if (e.response?.data is Map && e.response?.data['msg'] != null) {
+          mensajeError = e.response!.data['msg'];
+        } else {
+          mensajeError = e.message ?? 'Error desconocido';
+        }
+
+        if (mensajeError.contains("Ya existe un registro para esta mesa.")) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'ℹ️ Ya se ha registrado una votación para esta mesa. No es necesario volver a enviarla.',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '❌ Ocurrió un error al enviar la votación. Intenta nuevamente.',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        mensajeError = e.toString();
+      }
     } finally {
       setState(() => isSubmitting = false);
     }
@@ -135,7 +189,7 @@ class UninominalController {
       (acum, partido) => acum + (int.tryParse(controllers[partido]?.text ?? '0') ?? 0),
     );
     if (sumaPartidos > 240) {
-      _mostrarSnack(context, '⚠️ Suma de partidos ($sumaPartidos) supera el límite de 240');
+      _mostrarSnack(context, '⚠️ Suma de partidos supera el límite de 240 votos');
       return false;
     }
 
@@ -153,9 +207,13 @@ class UninominalController {
     return true;
   }
 
-  void _mostrarSnack(BuildContext context, String mensaje) {
+  void _mostrarSnack(BuildContext context, String mensaje, {Color color = Colors.orange, int segundos = 3}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje)),
+      SnackBar(
+        content: Text(mensaje, style: const TextStyle(color: Colors.white)),
+        backgroundColor: color,
+        duration: Duration(seconds: segundos),
+      ),
     );
   }
 }

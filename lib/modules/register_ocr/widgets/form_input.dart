@@ -31,6 +31,12 @@ class FormInputState extends State<FormInput> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double fontSize = screenWidth < 320
+        ? 12
+        : screenWidth < 400
+            ? 14
+            : 16;
     return SizedBox(
       width: MediaQuery.of(context).size.width / 2 - 24,
       child: Row(
@@ -39,19 +45,22 @@ class FormInputState extends State<FormInput> {
             flex: 2,
             child: Text(
               '${widget.label}:',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
+                fontSize: fontSize,
               ),
+              overflow: TextOverflow.visible, // Para que no ponga "..."
+              softWrap: true, // Permite que el texto se parta en varias líneas si es necesario
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            flex: 3,
+            flex: 2,
             child: TextField(
               controller: widget.controller,
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white12,

@@ -82,14 +82,14 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(height: 20),
 
-                    _buildActionButton(
+                    /*_buildActionButton(
                       context: context,
                       label: 'Registrar Votación',
                       onPressed: () {
                         Navigator.pushNamed(context, '/votacion');
                       },
                       description: 'Registrar votaciones de forma manual.',
-                    ),
+                    ),*/
                     const SizedBox(height: 20),
                     _buildActionButton(
                       context: context,

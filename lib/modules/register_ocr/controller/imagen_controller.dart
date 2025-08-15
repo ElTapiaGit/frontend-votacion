@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
@@ -9,62 +10,51 @@ import 'package:dio/dio.dart';
 class ImagenController {
   final String filestackApiKey;
   final ImagePicker _picker = ImagePicker();
-  final ApiService _apiService; // URL de tu backend
+  final ApiService _apiService;
 
-  ImagenController({required this.filestackApiKey, required Dio dio,}): _apiService = ApiService(dio);
+  ImagenController({
+    required this.filestackApiKey,
+    required Dio dio,
+  }) : _apiService = ApiService(dio);
 
-  Future<File?> captureImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      return File(pickedFile.path);
-    }
-    return null;
+  Future<File?> pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source);
+    return pickedFile != null ? File(pickedFile.path) : null;
   }
 
-  Future<File?> selectImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      return File(pickedFile.path);
+  Future<String> uploadToFilestack(File image) async {
+    final uri = Uri.parse(
+      'https://www.filestackapi.com/api/store/S3?key=$filestackApiKey',
+    );
+
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(await http.MultipartFile.fromPath('fileUpload', image.path));
+
+    final streamedResponse = await request.send().timeout(
+      const Duration(seconds: 30),
+      onTimeout: () => throw TimeoutException('Tiempo excedido al subir'),
+    );
+
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode != 200) {
+      throw Exception("Error al subir imagen: ${response.statusCode}");
     }
-    return null;
+
+    final data = json.decode(response.body);
+    return data['url'];
   }
 
-  Future<String?> uploadToFilestack(File image) async {
-    final uri = Uri.parse('https://www.filestackapi.com/api/store/S3?key=$filestackApiKey');
-
-    try {
-      final request = http.MultipartRequest('POST', uri)
-        ..files.add(await http.MultipartFile.fromPath('fileUpload', image.path));
-
-      final response = await request.send();
-      final responseData = await http.Response.fromStream(response);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(responseData.body);
-        return data['url'] ?? null;
-      }
-    } catch (e) {
-      // Aquí puedes loguear o manejar el error si quieres
-      print("Error al subir a Filestack: $e");
-    }
-    return null;
-  }
-
-  Future<ActaModel?> enviarActa({
+  Future<ActaModel> enviarActa({
     required String mesaId,
     required String fotoUrl,
     required bool observado,
   }) async {
-    try {
-      final request = ActaRequest(
-        mesaId: mesaId,
-        foto: fotoUrl,
-        observado: observado,
-      );
-      return await _apiService.crearActa(request);
-    } catch (e) {
-      print("Error al enviar acta: $e");
-      return null;
-    }
+    final request = ActaRequest(
+      mesaId: mesaId,
+      foto: fotoUrl,
+      observado: observado,
+    );
+    return await _apiService.crearActa(request);
   }
 }

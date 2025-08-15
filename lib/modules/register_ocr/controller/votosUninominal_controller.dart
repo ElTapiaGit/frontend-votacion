@@ -35,7 +35,7 @@ class VotosUninominalController {
       // ignore: avoid_print
       print('✅ VotoUninominal registrado: id=${response.id} mesa=${response.mesa}');
     } catch (e) {
-      print('❌ Error enviarVotos (uninominal): $e');
+      //print('❌ Error enviarVotos (uninominal): $e');
       rethrow;
     }
   }

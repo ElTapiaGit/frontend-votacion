@@ -23,8 +23,10 @@ class VotacionController {
 
     try {
       final response = await apiService.enviarVotosPresidenciales(request);
+      // ignore: avoid_print
       print('✅ Votación registrada: ${response.id}');
     } catch (e) {
+      // ignore: avoid_print
       print('❌ Error al enviar votación: $e');
       rethrow;
     }

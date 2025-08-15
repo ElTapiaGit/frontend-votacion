@@ -12,23 +12,27 @@ class MesaPage extends StatefulWidget {
 
 class _MesaPageState extends State<MesaPage> {
   final FiltrarMesaController _controller = FiltrarMesaController();
-  bool isLoading = false;
+  bool isLoading = false; // para "Continuar"
+  bool isScanning = false; // para botón de escanear
   String? _barcodeText;
   String _scanStatusMessage = 'Esperando escaneo...';
 
   Future<void> _pickAndScanImage() async {
+    setState(() => isScanning = true);
     final scanned = await _controller.pickAndScanImage();
+
     setState(() {
+      isScanning = false;
       _barcodeText = scanned;
 
       if (scanned != null) {
-        _scanStatusMessage = 'Resultado: $scanned';
+        _scanStatusMessage = 'Resultado: ✅ Escaneo exitoso';
       } else if (_controller.barcodeText == null) {
         _scanStatusMessage = 'No se pudo escanear el código. Intente nuevamente.';
       }
     });
 
-    if (scanned == null) {
+    if (scanned == null && mounted) {
       //en caso de no encontrar codigo
       if(mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -51,7 +55,14 @@ class _MesaPageState extends State<MesaPage> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => RegistrarOcrPage(mesa: mesa)),
-        );
+        ).then((_) {
+          // Cuando vuelve de la otra pantalla
+          _controller.mesaController.clear();
+          setState(() {
+            _barcodeText = null;
+            _scanStatusMessage = 'Esperando escaneo...';
+          });
+        });
       }
     } finally {
       if (mounted) {
@@ -91,12 +102,24 @@ class _MesaPageState extends State<MesaPage> {
                 ),
               ),
               const SizedBox(height: 30),
+              // BOTÓN ESCANEAR
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ElevatedButton.icon(
-                  onPressed: _pickAndScanImage,
-                  icon: const Icon(Icons.qr_code_scanner),
-                  label: const Text('Escanear código de barras'),
+                  onPressed: isScanning ? null : _pickAndScanImage,
+                  icon: isScanning
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.qr_code_scanner),
+                  label: Text(
+                    isScanning ? 'Escaneando...' : 'Escanear código de barras',
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.secondary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -152,9 +175,6 @@ class _MesaPageState extends State<MesaPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ElevatedButton(
                   onPressed: isLoading ? null : _continuar,
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Continuar'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
                     padding: const EdgeInsets.symmetric(vertical: 20),
@@ -162,6 +182,18 @@ class _MesaPageState extends State<MesaPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     foregroundColor: Colors.white,
+                  ),
+                  child: SizedBox(
+                    height: 24,
+                    child: Center(
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Text('Continuar'),
+                    ),
                   ),
                 ),
               )

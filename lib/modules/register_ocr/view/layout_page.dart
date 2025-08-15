@@ -69,7 +69,7 @@ class _RegistrarOcrPageState extends State<RegistrarOcrPage> {
                     children: [
                       _buildTabButton('Presidenciales', 0),
                       _buildTabButton('Uninominales', 1),
-                      _buildTabButton('Sincronizar votos', 2),
+                      _buildTabButton('Foto Acta', 2),
                     ],
                   ),
                 ),
@@ -101,7 +101,11 @@ class _RegistrarOcrPageState extends State<RegistrarOcrPage> {
     final isSelected = currentTab == index;
     return Expanded(
       child: GestureDetector(
-        onTap: null, //tab deshabilitado
+        onTap: () {
+          setState(() {
+            currentTab = index;
+          });
+        }, //tab deshabilitado
         child:  AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -109,13 +113,15 @@ class _RegistrarOcrPageState extends State<RegistrarOcrPage> {
             color: isSelected ? AppColors.secondary : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.primary,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
+          child: FittedBox( //Ajusta automáticamente el texto
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isSelected ? Colors.white : AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),

@@ -28,9 +28,9 @@ class HeaderDatosMesa extends StatelessWidget {
         children: [
           Text(
             titulo,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 22,
+              fontSize: MediaQuery.of(context).size.width < 360 ? 18 : 22,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -64,25 +64,42 @@ class _InfoText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double fontSize = screenWidth < 320
+        ? 12 // pantallas muy pequeñas
+        : screenWidth < 400
+            ? 14
+            : 16;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // separa label y value
         children: [
-          Text(
-            '$label:',
-            style: TextStyle(
-              color: Colors.white70,
-              fontWeight: FontWeight.w500,
-              fontSize: highlighted ? 16 : 14,
+          Expanded(
+            flex: 1,
+            child: Text(
+              '$label:',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w500,
+                fontSize: highlighted ? fontSize + 2 : fontSize,
+              ),
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              color: highlighted ? Colors.amberAccent : Colors.white,
-              fontWeight: highlighted ? FontWeight.w900 : FontWeight.bold,
-              fontSize: highlighted ? 18 : 14,
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 2,
+            child: Text(
+              value,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              textAlign: TextAlign.right, // alineado a la derecha
+              style: TextStyle(
+                color: highlighted ? Colors.amberAccent : Colors.white,
+                fontWeight: highlighted ? FontWeight.w900 : FontWeight.bold,
+                fontSize: highlighted ? fontSize + 2 : fontSize,
+              ),
             ),
           ),
         ],

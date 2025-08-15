@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:demo_filestack/data/models/mesa_model.dart';
 import 'package:demo_filestack/modules/register_ocr/controller/ocr_controller.dart';
 import 'package:demo_filestack/modules/register_ocr/widgets/form_input.dart';
-import 'package:demo_filestack/modules/votacion/controller/votosPresidencial_controller.dart';
+import 'package:demo_filestack/modules/register_ocr/controller/votosPresidencial_controller.dart';
 import 'package:demo_filestack/core/api/api_service.dart';
 
 class PresidencialController {
@@ -50,13 +51,27 @@ class PresidencialController {
     if (pickedImage != null) {
       setState(() => isProcessing = true);
       try {
-        await ocrController.sendImageToBackend(File(pickedImage.path));
+        // Intentar procesar en máximo 30 segundos
+        await ocrController
+          .sendImageToBackend(File(pickedImage.path))
+          .timeout(const Duration(seconds: 30));
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("✅ Imagen procesada correctamente.")),
         );
+      } on TimeoutException {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("⏱️ El proceso demoro demasiado. Intenta nuevamente."),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("❌ Error al procesar la imagen: $e")),
+          SnackBar(
+            content: Text("❌ Error al procesar la imagen"),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       } finally {
         setState(() => isProcessing = false);
@@ -114,14 +129,55 @@ class PresidencialController {
         votosBlancos: votosBlancos,
         votosNulos: votosNulos,
       );
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Votación registrada correctamente')),
+        SnackBar(
+          content: Text(
+            '✅ Votación registrada correctamente', 
+            style: const TextStyle(color: Colors.white)
+          ),
+          backgroundColor:  Colors.green,
+          duration: Duration(seconds: 2),
+        ),
       );
       onNext();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Error al enviar: $e')),
-      );
+      String mensajeError = '';
+
+        if (e is DioError) {
+        // Si la API respondió con un mensaje específico
+        if (e.response?.data is Map && e.response?.data['msg'] != null) {
+          mensajeError = e.response!.data['msg'];
+        } else {
+          mensajeError = e.message ?? 'Error desconocido';
+        }
+
+        if (mensajeError.contains("Ya existe un registro para esta mesa.")) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'ℹ️ Ya se ha registrado una votación para esta mesa. No es necesario volver a enviarla.',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '❌ Ocurrió un error al enviar la votación. Intenta nuevamente.',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      } else {
+        mensajeError = e.toString();
+      }
     } finally {
       setState(() => isSubmitting = false);
     }
@@ -138,7 +194,7 @@ class PresidencialController {
       (acum, partido) => acum + (int.tryParse(controllers[partido]?.text ?? '0') ?? 0),
     );
     if (sumaPartidos > 240) {
-      _mostrarSnack(context, '⚠️ Suma de partidos ($sumaPartidos) supera el límite de 240');
+      _mostrarSnack(context, '⚠️ Suma de partidos supera el límite de 240 votos');
       return false;
     }
 
@@ -149,16 +205,20 @@ class PresidencialController {
       (acum, campo) => acum + (int.tryParse(controllers[campo]?.text ?? '0') ?? 0),
     );
     if (sumaTotales > 240) {
-      _mostrarSnack(context, '⚠️ Suma de totales ($sumaTotales) supera el límite de 240');
+      _mostrarSnack(context, '⚠️ Los votos (Validos, Balncos y Nulos) supera el límite de 240');
       return false;
     }
 
     return true;
   }
 
-  void _mostrarSnack(BuildContext context, String mensaje) {
+  void _mostrarSnack(BuildContext context, String mensaje, {Color color = Colors.orange, int segundos = 3}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje)),
+      SnackBar(
+        content: Text(mensaje, style: const TextStyle(color: Colors.white)),
+        backgroundColor: color,
+        duration: Duration(seconds: segundos),
+      ),
     );
   }
 }

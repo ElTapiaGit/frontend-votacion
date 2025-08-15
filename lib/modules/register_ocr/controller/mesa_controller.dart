@@ -19,30 +19,38 @@ class FiltrarMesaController {
 
     if (pickedFile != null) {
       final inputImage = InputImage.fromFilePath(pickedFile.path);
-      final barcodeScanner = BarcodeScanner();
+      // Configurar para aceptar varios formatos de código de barras
+      final barcodeScanner = BarcodeScanner(
+        formats: [
+          BarcodeFormat.code128,
+          BarcodeFormat.code39,
+          BarcodeFormat.ean13,
+          BarcodeFormat.ean8,
+          BarcodeFormat.upca,
+          BarcodeFormat.upca,
+          BarcodeFormat.itf,
+          BarcodeFormat.qrCode, // por si acaso
+        ],
+      );
       final barcodes = await barcodeScanner.processImage(inputImage);
       await barcodeScanner.close();
 
-
       if (barcodes.isNotEmpty) {
         final raw = barcodes.first.rawValue;
-        print('Código escaneado rawValue: $raw');
 
         if (raw != null) {
-          barcodeText = raw;
-          print('Código escaneado convertido a string: $barcodeText');
-          return barcodeText; // ✅ Este valor se devuelve correctamente
-        } else {
-          print('El código escaneado es nulo');
-          return null;
-        }
+          final raw = barcodes.first.rawValue;
+
+          if (raw != null) {
+            barcodeText = raw.trim();
+            return barcodeText;
+          }
+        } 
+        return null;
       } else {
-        print('No se detectó ningún código en la imagen');
         return null;
       }
-    } else {
-      print('No se seleccionó ninguna imagen');
-    }
+    } 
     return null;
   }
 
@@ -51,16 +59,12 @@ class FiltrarMesaController {
     final nroMesa = mesaController.text.trim();
 
     if (barcodeText == null && nroMesa.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debe ingresar el número de mesa o escanear un código')),
-      );
+      _showSnackBar(context, 'Debe ingresar el codigo de mesa o escanear codigo de barras', bgColor: Colors.orange);
       return false;
     }
 
     if (nroMesa.isNotEmpty && int.tryParse(nroMesa) == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('El número de mesa debe ser un valor numérico')),
-      );
+      _showSnackBar(context, 'El codigo de mesa debe ser un valor numérico', bgColor: Colors.orange);
       return false;
     }
 
@@ -74,9 +78,7 @@ class FiltrarMesaController {
       if (scannedValue != null) {
         final mesa = await _api.getMesaByNum(scannedValue);
         if (mesa == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Mesa no encontrada')),
-          );
+          _showSnackBar(context, 'Mesa no encontrada', bgColor: const Color(0xFFFF7300));
         }
         return mesa;
       }
@@ -86,23 +88,42 @@ class FiltrarMesaController {
         final codigoMesa = int.parse(inputCode);
         final mesa = await _api.getMesaByCodigo(codigoMesa);
         if (mesa == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Mesa no encontrada')),
-          );
+          _showSnackBar(context, 'Mesa no encontrada', bgColor: const Color(0xFFFF7300));
         }
         return mesa;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debe ingresar un código o escanear')),
-      );
+      _showSnackBar(context, 'Debe ingresar un código o escanear codigo de barras', bgColor: Colors.orange);
       return null;
-    } catch (e) {
-      print('Error al obtener datos de mesa: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error de conexión con el servidor')),
-      );
+
+    }  on DioError catch (dioError) {
+      // Manejo específico de errores HTTP
+      if (dioError.response?.statusCode == 404) {
+        // Mostrar el mensaje que envía la API si lo manda
+        final msg = dioError.response?.data is Map && dioError.response?.data['msg'] != null
+            ? dioError.response?.data['msg']
+            : 'Mesa no encontrada';
+        _showSnackBar(context, msg, bgColor: const Color(0xFFFF7300));
+        return null;
+      }
+
+      _showSnackBar(context, 'Error de conexión con el servidor. Espere un momento antes de volver a intentar...', bgColor: Colors.redAccent);
+      return null;
+
+    }catch (e) {
+      _showSnackBar(context, 'Error inesperado', bgColor: Colors.redAccent);
       return null;
     }
+  }
+
+  void _showSnackBar(BuildContext context, String message, {Color bgColor = Colors.red}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: bgColor,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }
