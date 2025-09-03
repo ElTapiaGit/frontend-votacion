@@ -38,7 +38,7 @@ class HeaderDatosMesa extends StatelessWidget {
           _InfoText(label: 'Departamento', value: mesa.departamento?.nombre ?? '---'),
           _InfoText(label: 'Provincia', value: mesa.provincia?.nombre ?? '---'),
           _InfoText(label: 'Municipio', value: mesa.municipio?.nombre ?? '---'),
-          _InfoText(label: 'Localidad', value: mesa.localidad?.nombre ?? '---'),
+          _InfoText(label: 'Zona', value: mesa.zona?.nombre ?? '---'),
           _InfoText(label: 'Recinto', value: mesa.recinto?.nombre ?? '---'),
           _InfoText(
             label: 'Nro. Mesa',

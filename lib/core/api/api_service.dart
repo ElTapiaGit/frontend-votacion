@@ -10,7 +10,7 @@ import 'package:demo_filestack/data/models/acta_model.dart';
 
 part 'api_service.g.dart';
 
-@RestApi(baseUrl: "https://sleeping-are-galaxy-friendly.trycloudflare.com/api")
+@RestApi(baseUrl: "https://servidor-votos.onrender.com/api")
 abstract class ApiService {
   factory ApiService(Dio dio, {String? baseUrl}) {
     dio.interceptors.add(TokenInterceptor());

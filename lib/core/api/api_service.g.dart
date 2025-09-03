@@ -10,7 +10,7 @@ part of 'api_service.dart';
 
 class _ApiService implements ApiService {
   _ApiService(this._dio, {this.baseUrl, this.errorLogger}) {
-    baseUrl ??= 'https://sleeping-are-galaxy-friendly.trycloudflare.com/api';
+    baseUrl ??= 'https://servidor-votos.onrender.com/api';
   }
 
   final Dio _dio;

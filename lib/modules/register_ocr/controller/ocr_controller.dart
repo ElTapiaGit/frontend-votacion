@@ -48,9 +48,8 @@ class OcrController {
     List<String> lines = text.split('\n').map((e) => e.trim()).toList();
 
     Map<String, String> votes = {
-      'AP': '', 'LYP': '', 'ADN': '', 'APB': '', 'SUMATE': '', 'NGP': '',
-      'LIBRE': '', 'FP': '', 'MAS-IPSP': '', 'MORENA': '', 'UNIDAD': '',
-      'PDC': '', 'VOTOS VÁLIDOS': '', 'VOTOS BLANCOS': '', 'VOTOS NULOS': '',
+      'LIBRE': '', 'PDC': '',
+      'VOTOS VÁLIDOS': '', 'VOTOS BLANCOS': '', 'VOTOS NULOS': '',
     };
 
     for (int i = 0; i < lines.length - 1; i++) {

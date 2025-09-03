@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:demo_filestack/core/constants/app_colors.dart';
 import 'package:demo_filestack/data/models/mesa_model.dart';
 import 'package:demo_filestack/modules/register_ocr/view/presidencial_page.dart';
-import 'package:demo_filestack/modules/register_ocr/view/uninominal_page.dart';
+//import 'package:demo_filestack/modules/register_ocr/view/uninominal_page.dart';
 import 'package:demo_filestack/modules/register_ocr/view/image_page.dart';
 
 
@@ -29,15 +29,19 @@ class _RegistrarOcrPageState extends State<RegistrarOcrPage> {
           });
         }, mesa: widget.mesa,
       ),
-      UninominalView(
+      /*UninominalView(
         onNext: () {
           setState(() {
             currentTab = 2;
           });
         }, mesa: widget.mesa,
-      ),
+      ),*/
       ImagenView(
-        mesa: widget.mesa,
+        onNext: () {
+          setState(() {
+            currentTab = 2;
+          });
+        },mesa: widget.mesa,
       ),
     ];
   }
@@ -68,8 +72,8 @@ class _RegistrarOcrPageState extends State<RegistrarOcrPage> {
                   child: Row(
                     children: [
                       _buildTabButton('Presidenciales', 0),
-                      _buildTabButton('Uninominales', 1),
-                      _buildTabButton('Foto Acta', 2),
+                      //_buildTabButton('Uninominales', 1),
+                      _buildTabButton('Foto Acta', 1),
                     ],
                   ),
                 ),

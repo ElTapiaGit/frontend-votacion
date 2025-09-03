@@ -6,10 +6,12 @@ import 'package:demo_filestack/core/constants/app_colors.dart';
 import 'package:demo_filestack/modules/register_ocr/controller/imagen_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class ImagenView extends StatefulWidget {
+  final VoidCallback onNext;
   final MesaModel mesa;
-  const ImagenView({super.key, required this.mesa});
+  const ImagenView({super.key, required this.mesa, required this.onNext});
 
   @override
   State<ImagenView> createState() => _ImagenViewState();
@@ -47,10 +49,39 @@ class _ImagenViewState extends State<ImagenView> {
   Future<void> _pickAndSetImage(ImageSource source) async {
     final file = await _controller.pickImage(source);
     if (file != null && mounted) {
-      setState(() {
-        _image = file;
-        _uploadedUrl = null;
-      });
+      // Recortar con relación A4 (1:1.414)
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: file.path,
+        aspectRatio: CropAspectRatio(ratioX: 297, ratioY: 210), //A4
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 90,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Recortar Acta',
+            toolbarColor: AppColors.primary,
+            toolbarWidgetColor: Colors.white,
+            hideBottomControls: false, // deja visibles las opciones
+            lockAspectRatio: false, // permite al usuario mover y cambiar tamaño libre
+            initAspectRatio: CropAspectRatioPreset.original, // por defecto libre
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.ratio4x3,
+              CropAspectRatioPreset.ratio16x9,
+              //CropAspectRatioPresetCustom(), // puedes crear el de A4 como hiciste
+            ],
+          ),
+          IOSUiSettings(
+            title: 'Recortar Acta',
+            aspectRatioLockEnabled: true,
+          ),
+        ],
+      );
+      if (croppedFile != null) {
+        setState(() {
+          _image = File(croppedFile.path);
+          _uploadedUrl = null;
+        });
+      }
     }
   }
 

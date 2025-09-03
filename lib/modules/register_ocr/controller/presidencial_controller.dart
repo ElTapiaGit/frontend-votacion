@@ -31,8 +31,7 @@ class PresidencialController {
 
   void _initControllers() {
     for (var label in [
-      'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
-      'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC',
+      'LIBRE', 'PDC',
       'VOTOS VÁLIDOS', 'VOTOS BLANCOS', 'VOTOS NULOS'
     ]) {
       controllers[label] = TextEditingController();
@@ -111,8 +110,7 @@ class PresidencialController {
     // Construir payload
     final votosPartidos = <String, int>{};
     for (var label in [
-      'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
-      'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
+      'LIBRE', 'PDC'
     ]) {
       votosPartidos[label] = int.tryParse(controllers[label]?.text ?? '0') ?? 0;
     }
@@ -186,8 +184,7 @@ class PresidencialController {
   bool _validarLimites(BuildContext context) {
     // Validación de partidos
     final partidos = [
-      'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
-      'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
+      'LIBRE', 'PDC'
     ];
     final sumaPartidos = partidos.fold<int>(
       0,
@@ -205,7 +202,7 @@ class PresidencialController {
       (acum, campo) => acum + (int.tryParse(controllers[campo]?.text ?? '0') ?? 0),
     );
     if (sumaTotales > 240) {
-      _mostrarSnack(context, '⚠️ Los votos (Validos, Balncos y Nulos) supera el límite de 240');
+      _mostrarSnack(context, '⚠️ Los votos (Validos, Blancos y Nulos) supera el límite de 240');
       return false;
     }
 

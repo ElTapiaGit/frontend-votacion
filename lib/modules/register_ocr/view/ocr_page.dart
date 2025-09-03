@@ -23,8 +23,7 @@ class _OcrPageState extends State<OcrPage> {
   void initState() {
     super.initState();
     for (var label in [
-      'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP', 'LIBRE', 'FP', 'MAS-IPSP',
-      'MORENA', 'UNIDAD', 'PDC', 'VOTOS VÁLIDOS', 'VOTOS BLANCOS', 'VOTOS NULOS'
+      'LIBRE', 'PDC', 'VOTOS VÁLIDOS', 'VOTOS BLANCOS', 'VOTOS NULOS'
     ]) {
       _controllers[label] = TextEditingController();
     }
@@ -85,8 +84,7 @@ class _OcrPageState extends State<OcrPage> {
                 runSpacing: 12,
                 children: [
                       for (var label in [
-                        'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
-                        'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
+                        'LIBRE', 'PDC'
                       ])
                         FormInput(label: label, controller: _controllers[label]!),
                     ],

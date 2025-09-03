@@ -13,9 +13,15 @@ class VotacionController {
     required int votosBlancos,
     required int votosNulos,
   }) async {
+    // Normalizar keys: reemplazar '-' por '_' (ej: 'MAS-IPSP' -> 'MAS_IPSP')
+      final cleanedVotes = <String, int>{};
+      votos.forEach((k, v) {
+        final key = k.replaceAll('-', '_');
+        cleanedVotes[key] = v;
+      }); 
     final request = VotoPresidencialRequest(
       mesa: mesaId,
-      votos: votos,
+      votos: cleanedVotes,
       votosValidos: votosValidos,
       votosBlancos: votosBlancos,
       votosNulos: votosNulos,

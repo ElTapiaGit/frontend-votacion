@@ -30,8 +30,7 @@ class UninominalController {
 
   void _initControllers() {
     for (var label in [
-      'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
-      'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC',
+      'AP', 'ADN', 'SUMATE', 'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC',
       'VOTOS VÁLIDOS', 'VOTOS BLANCOS', 'VOTOS NULOS'
     ]) {
       controllers[label] = TextEditingController();
@@ -107,8 +106,8 @@ class UninominalController {
     // Construir payload
     final votosPartidos = <String, int>{};
     for (var label in [
-      'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
-      'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
+      'AP', 'ADN', 'SUMATE', 'LIBRE', 'FP',
+      'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
     ]) {
       votosPartidos[label] = int.tryParse(controllers[label]?.text ?? '0') ?? 0;
     }
@@ -181,8 +180,8 @@ class UninominalController {
   bool _validarLimites(BuildContext context) {
     // Validación de partidos
     final partidos = [
-      'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
-      'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
+      'AP', 'ADN', 'SUMATE', 'LIBRE', 'FP', 
+      'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
     ];
     final sumaPartidos = partidos.fold<int>(
       0,

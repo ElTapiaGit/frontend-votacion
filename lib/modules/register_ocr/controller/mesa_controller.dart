@@ -30,6 +30,7 @@ class FiltrarMesaController {
           BarcodeFormat.upca,
           BarcodeFormat.itf,
           BarcodeFormat.qrCode, // por si acaso
+          BarcodeFormat.pdf417,
         ],
       );
       final barcodes = await barcodeScanner.processImage(inputImage);
@@ -74,13 +75,23 @@ class FiltrarMesaController {
   /// Obtiene la mesa desde la API dependiendo del tipo de entrada
   Future<MesaModel?> obtenerDatosMesa(BuildContext context, {String? scannedValue}) async {
     try {
-      // Si se escaneó un código de barras (numMesa)
+      // 1 Si se escaneó un código de barras (numMesa)
       if (scannedValue != null) {
-        final mesa = await _api.getMesaByNum(scannedValue);
-        if (mesa == null) {
-          _showSnackBar(context, 'Mesa no encontrada', bgColor: const Color(0xFFFF7300));
+        // Validar si es codigoMesa o numMesa
+        final onlyDigits = RegExp(r'^\d+$');
+        if (onlyDigits.hasMatch(scannedValue)) {
+          if (scannedValue.length <= 8) {
+            // Probablemente es codigoMesa
+            final codigoMesa = int.parse(scannedValue);
+            return await _buscarPorCodigo(context, codigoMesa);
+          } else {
+            // Probablemente es numMesa
+            return await _buscarPorNum(context, scannedValue);
+          }
+        } else {
+          // Si no es numérico, lo tratamos como numMesa (string)
+          return await _buscarPorNum(context, scannedValue);
         }
-        return mesa;
       }
       // Si se ingresó manualmente un código (codigoMesa)
       final inputCode = mesaController.text.trim();
@@ -116,6 +127,24 @@ class FiltrarMesaController {
     }
   }
 
+  /// Helper para buscar por codigoMesa
+  Future<MesaModel?> _buscarPorCodigo(BuildContext context, int codigo) async {
+    final mesa = await _api.getMesaByCodigo(codigo);
+    if (mesa == null) {
+      _showSnackBar(context, 'Mesa no encontrada', bgColor: const Color(0xFFFF7300));
+    }
+    return mesa;
+  }
+
+  /// Helper para buscar por numMesa
+  Future<MesaModel?> _buscarPorNum(BuildContext context, String num) async {
+    final mesa = await _api.getMesaByNum(num);
+    if (mesa == null) {
+      _showSnackBar(context, 'Mesa no encontrada', bgColor: const Color(0xFFFF7300));
+    }
+    return mesa;
+  }
+
   void _showSnackBar(BuildContext context, String message, {Color bgColor = Colors.red}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -127,3 +156,5 @@ class FiltrarMesaController {
     );
   }
 }
+
+

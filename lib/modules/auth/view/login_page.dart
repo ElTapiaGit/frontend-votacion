@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Image.asset('assets/images/logo.png', height: 120),
+                  Image.asset('assets/images/logov2.png', height: 120),
 
                   const SizedBox(height: 30),
                   CustomInputField(

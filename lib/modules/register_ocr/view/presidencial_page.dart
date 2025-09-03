@@ -73,8 +73,7 @@ class _PresidencialViewState extends State<PresidencialView> {
                     runSpacing: 12,
                     children: [
                       for (var label in [
-                        'AP', 'LYP', 'ADN', 'APB', 'SUMATE', 'NGP',
-                        'LIBRE', 'FP', 'MAS-IPSP', 'MORENA', 'UNIDAD', 'PDC'
+                        'LIBRE', 'PDC'
                       ])
                         FormInput(key: _controller.inputKeys[label], label: label, controller: _controller.controllers[label]!,),
                     ],
